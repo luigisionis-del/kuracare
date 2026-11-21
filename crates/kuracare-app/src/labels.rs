@@ -177,7 +177,8 @@ pub fn pause_label(until: Option<&str>) -> String {
     let Some(z) = until.and_then(|u| time::local(u).ok()) else {
         return String::new();
     };
-    if z.year() >= OPEN_PAUSE_YEAR {
+    // A year of slack: in any time zone the open pause starts on 1/1/2100 UTC.
+    if z.year() >= OPEN_PAUSE_YEAR - 1 {
         return "finché non la togli".into();
     }
     let day = z.strftime("%Y-%m-%d").to_string();
