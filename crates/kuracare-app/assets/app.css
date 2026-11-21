@@ -220,6 +220,7 @@ button.tick:active svg { opacity: 1; }
 .week-card { display: flex; align-items: center; justify-content: space-between; gap: var(--s3); }
 .week-card p { margin: 0; }
 .week-card > div { min-width: 0; }
+.week-card > button { flex: none; }
 .week-nav { display: flex; align-items: center; gap: var(--s2); }
 .week-nav .week-title { flex: 1; text-align: center; min-width: 0; }
 .week-nav h1 { margin: 0; }

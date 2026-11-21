@@ -25,10 +25,25 @@ BT=${BUILD_TOOLS:-$ANDROID_HOME/build-tools/36.0.0}
 VERSION=$(sed -n 's/^version = "\(.*\)"/\1/p' "$ROOT/Cargo.toml" | head -1)
 APP="$ROOT/crates/kuracare-app"
 GEN="$ROOT/target/dx/kuracare-app/release/android/app"
-OUT="$ROOT/target/kuracare-$VERSION.apk"
+# KURACARE_TARGET=x86_64-linux-android builds a variant for the PC emulator only
+# (different file name, so it never ends up on the phone by mistake).
+TARGET=${KURACARE_TARGET:-aarch64-linux-android}
+if [ "$TARGET" = aarch64-linux-android ]; then
+  OUT="$ROOT/target/kuracare-$VERSION.apk"
+else
+  OUT="$ROOT/target/kuracare-$VERSION-${TARGET%%-*}-emulatore.apk"
+fi
 
 echo "==> Rust (release) e progetto Android"
-(cd "$APP" && dx build --platform android --release --target aarch64-linux-android)
+(cd "$APP" && dx build --platform android --release --target "$TARGET")
+
+# Only the native library of this target: dx leaves those of earlier builds behind.
+case "$TARGET" in
+  aarch64-*) ABI=arm64-v8a ;;
+  x86_64-*) ABI=x86_64 ;;
+  *) echo "target non previsto: $TARGET" >&2; exit 1 ;;
+esac
+find "$GEN/app/src/main/jniLibs" -mindepth 1 -maxdepth 1 -type d ! -name "$ABI" -exec rm -rf {} +
 
 echo "==> Manifest, configurazione di rete, icone, regole di backup, codice degli inviti"
 cp "$APP/android/AndroidManifest.xml" "$GEN/app/src/main/AndroidManifest.xml"

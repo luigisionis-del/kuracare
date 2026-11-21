@@ -91,6 +91,7 @@ fn App() -> Element {
     let view = app.view.read().clone();
     rsx! {
         document::Meta { http_equiv: "Content-Security-Policy", content: CSP }
+        document::Title { "Kuracare" }
         style { {theme::fonts_css()} }
         style { {theme::themes_css()} {CSS} }
         main {

@@ -112,6 +112,17 @@ La PWA Svelte (tappe 2-3) è conservata nel tag git `pwa-final`, solo come rifer
   poi associazioni sulle ultime 4 settimane, mostrate solo con ≥3 giorni con check-in per gruppo:
   regola di visualizzazione, non soglia statistica). Grafici SVG a mano in `views/summary.rs`, una
   serie per grafico, tabella dei numeri, nota fissa "Un'associazione non indica una causa".
+- **Dati in uscita (tappa 6, 21/11)**: backup cifrato = copia della cassaforte com'è
+  (`kuracare-core/src/backup.rs`), ripristinabile solo in Kuracare vuota e con la passphrase di
+  allora; esportazione per la ricerca JSON/CSV (`export.rs`, campi ammessi, celle CSV disinnescate
+  contro le formule); ogni uscita crea un evento `dataRelease` ("Invio dati"). File via selettore
+  di sistema (SAF, nessun permesso), di passaggio nella cache privata e cancellati. Ripristino
+  provato end-to-end nell'emulatore il 21/11 (APK x86_64:
+  `KURACARE_TARGET=x86_64-linux-android scripts/apk-release.sh`, AVD in `~/.cache/kuracare-avd`,
+  sempre `ANDROID_SERIAL` esplicito se il Pixel è collegato).
+- Fatto aperto (emulatore, 21/11): il contenuto dei campi password della WebView è leggibile
+  dall'albero di accessibilità (`uiautomator dump`): un servizio di accessibilità installato
+  potrebbe leggere la passphrase mentre si digita. Comportamento della WebView, da approfondire.
 - Questionari: motore in `kuracare-core/src/questionnaires.rs`, definizioni in
   `content/questionnaires/*.it.json` con testi SEGNAPOSTO e `ready: false` (nascosti nell'app).
   Nessuna soglia di interpretazione mostrata.

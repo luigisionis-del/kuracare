@@ -229,7 +229,9 @@ pub fn Data() -> Element {
                     Chip { label: "CSV (fogli di calcolo)", pressed: csv(), onclick: move |_| csv.set(true) }
                     Chip { label: "JSON", pressed: !csv(), onclick: move |_| csv.set(false) }
                 }
-                p { class: "label", "Cosa esce ({total} registrazioni)" }
+                p { class: "label",
+                    if total == 1 { "Cosa esce (1 registrazione)" } else { "Cosa esce ({total} registrazioni)" }
+                }
                 if preview.is_empty() {
                     p { class: "hint", "In questo periodo non c'è niente da esportare." }
                 } else {
@@ -267,7 +269,12 @@ pub fn Data() -> Element {
                                 span {
                                     {describe(&e)}
                                     if let Payload::DataRelease(r) = &e.payload {
-                                        span { class: "muted", " · {r.records} registrazioni · «{r.destination}»" }
+                                        span { class: "muted",
+                                            {
+                                                let what = if r.scope == "backup" { "elementi cifrati" } else { "registrazioni" };
+                                                format!(" · {} {what} · «{}»", r.records, r.destination)
+                                            }
+                                        }
                                     }
                                 }
                             }
