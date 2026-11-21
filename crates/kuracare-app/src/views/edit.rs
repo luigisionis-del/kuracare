@@ -6,7 +6,7 @@ use crate::labels::{checkin_label, describe, meal_label, num, route_label};
 use crate::photo;
 use crate::platform::vault;
 use crate::state::use_app;
-use crate::views::parts::{Chip, Scale};
+use crate::views::parts::{Chip, Scale, ScreenHead, kind_icon};
 
 const DURATIONS: [u32; 5] = [5, 10, 20, 30, 60];
 
@@ -157,7 +157,7 @@ pub fn Edit(id: String) -> Element {
 
     rsx! {
         section { class: "fade",
-            h1 { {describe(&d)} }
+            ScreenHead { title: describe(&d), icon: kind_icon(&d.payload) }
             if !matches!(d.payload, Payload::Task(_)) {
                 label { r#for: "when", "Quando" }
                 input { id: "when", r#type: "datetime-local", value: "{when}", oninput: move |e| when.set(e.value()) }
@@ -360,7 +360,7 @@ pub fn Edit(id: String) -> Element {
                 },
             }
 
-            div { class: "actions",
+            div { class: "actions dock",
                 button { class: "primary", onclick: save, "Salva" }
                 button { class: "quiet", onclick: move |_| app.back(), "Lascia com'era" }
                 if !confirm_delete() {

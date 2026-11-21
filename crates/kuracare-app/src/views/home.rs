@@ -8,7 +8,7 @@ use kuracare_core::{questionnaires, time};
 
 use crate::labels::{day_label, describe, greeting, long_date, meal_label, pause_label};
 use crate::state::{View, use_app};
-use crate::views::parts::Icon;
+use crate::views::parts::{Icon, kind_icon};
 
 #[component]
 pub fn Home() -> Element {
@@ -376,8 +376,9 @@ pub fn Home() -> Element {
                             button {
                                 class: "entry",
                                 onclick: { let id = e.id.clone(); move |_| app.go(View::Edit(id.clone())) },
+                                Icon { name: kind_icon(&e.payload) }
                                 span { class: "time", {time::hhmm(&e.ts)} }
-                                " {describe(&e)}"
+                                "{describe(&e)}"
                             }
                         }
                     }

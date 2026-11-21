@@ -3,6 +3,7 @@ use kuracare_core::{enrich, time};
 
 use crate::labels::{describe, short_date};
 use crate::state::{View, use_app};
+use crate::views::parts::{Icon, ScreenHead, kind_icon};
 
 #[component]
 pub fn Enrich() -> Element {
@@ -15,20 +16,23 @@ pub fn Enrich() -> Element {
 
     rsx! {
         section { class: "fade",
-            h1 { "Se ti va" }
-            p { class: "muted", "Un angolo per i momenti tranquilli. Qui puoi aggiungere qualche dettaglio a ciò che hai segnato di fretta. Nulla è obbligatorio." }
+            ScreenHead {
+                title: "Se ti va",
+                icon: "sparkle",
+                subtitle: "Un angolo per i momenti tranquilli. Qui puoi aggiungere qualche dettaglio a ciò che hai segnato di fretta. Nulla è obbligatorio.",
+            }
             if candidates.is_empty() {
                 div { class: "card", p { "Qui non c'è niente da sistemare. Goditi il momento." } }
             }
             for e in candidates {
-                div { key: "{e.id}", class: "card",
-                    p {
+                div { key: "{e.id}", class: "card enrich-card",
+                    p { class: "enrich-what",
+                        Icon { name: kind_icon(&e.payload) }
                         strong { {describe(&e)} }
-                        br {}
-                        span { class: "muted",
-                            {time::local(&e.ts).map(|z| short_date(&z)).unwrap_or_default()}
-                            ", {time::hhmm(&e.ts)}"
-                        }
+                    }
+                    p { class: "muted",
+                        {time::local(&e.ts).map(|z| short_date(&z)).unwrap_or_default()}
+                        ", {time::hhmm(&e.ts)}"
                     }
                     div { class: "row",
                         button { class: "small", onclick: { let id = e.id.clone(); move |_| app.go(View::Edit(id.clone())) }, "Aggiungi dettagli" }
@@ -47,7 +51,7 @@ pub fn Enrich() -> Element {
                     }
                 }
             }
-            h2 { "Le tue liste" }
+            h2 { class: "sec", Icon { name: "list" } "Le tue liste" }
             p { class: "muted", "Varietà, integratori, gesti di cura, stanze, pensieri: puoi riordinarli con calma, per esempio copiando THC e CBD dalle etichette." }
             button { onclick: move |_| app.go(View::Lists), "Apri le tue liste" }
             div { class: "actions", button { class: "quiet", onclick: move |_| app.back(), "Torna a oggi" } }

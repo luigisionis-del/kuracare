@@ -7,7 +7,7 @@ use crate::labels::{OPEN_PAUSE_YEAR, pause_label};
 use crate::notify;
 use crate::state::{View, use_app};
 use crate::theme::{Look, Mode, Theme, palette};
-use crate::views::parts::Chip;
+use crate::views::parts::{Chip, Icon, ScreenHead};
 
 const PAUSES: [(&str, i64); 3] = [("Un giorno", 1), ("Tre giorni", 3), ("Una settimana", 7)];
 const LOCK_MINUTES: [u32; 5] = [1, 2, 5, 10, 15];
@@ -81,9 +81,10 @@ pub fn Settings() -> Element {
 
     rsx! {
         section { class: "fade",
-            h1 { "Impostazioni" }
+            ScreenHead { title: "Impostazioni" }
 
-            h2 { "Aspetto" }
+            div { class: "card group",
+                h2 { class: "first sec", Icon { name: "palette" } "Aspetto" }
             p { class: "label", "Tema" }
             div { class: "chips", role: "group", aria_label: "Tema",
                 for t in Theme::CHOICES {
@@ -113,7 +114,10 @@ pub fn Settings() -> Element {
                 }
             }
 
-            h2 { "Inviti" }
+            }
+
+            div { class: "card group",
+                h2 { class: "first sec", Icon { name: "bell" } "Inviti" }
             p { class: "muted",
                 "Una notifica che chiede “Ti va di…?”, in un momento a caso di ogni finestra del check-in, "
                 "e all'ora delle cose da fare che hanno un orario. Mai ripetuta: se non è il momento, "
@@ -155,11 +159,15 @@ pub fn Settings() -> Element {
                 }
             }
 
-            h2 { "Momenti del check-in" }
+            }
+
+            div { class: "card group",
+                h2 { class: "first sec", Icon { name: "today" } "Momenti del check-in" }
             for (i, w) in windows.read().iter().cloned().enumerate() {
-                div { key: "{i}", class: "card row",
+                div { key: "{i}", class: "window-row",
                     label { class: "sr", r#for: "ws{i}", "Dalle" }
                     input { id: "ws{i}", r#type: "time", value: "{w.start}", oninput: move |e| windows.write()[i].start = e.value() }
+                    span { class: "to", "aria-hidden": "true", "→" }
                     label { class: "sr", r#for: "we{i}", "alle" }
                     input { id: "we{i}", r#type: "time", value: "{w.end}", oninput: move |e| windows.write()[i].end = e.value() }
                     button { class: "quiet", aria_label: "Togli questo momento", onclick: move |_| { windows.write().remove(i); }, "Togli" }
@@ -188,7 +196,10 @@ pub fn Settings() -> Element {
                 }
             }
 
-            h2 { "Pausa" }
+            }
+
+            div { class: "card group",
+                h2 { class: "first sec", Icon { name: "pause" } "Pausa" }
             if paused {
                 p { "Sei in pausa {pause_label(settings.pause_until.as_deref())}. Kuracare non ti chiede niente e non manda inviti." }
                 button { class: "small", onclick: move |_| app.update_settings(|s| s.pause_until = None), "Riprendi adesso" }
@@ -209,7 +220,10 @@ pub fn Settings() -> Element {
                 }
             }
 
-            h2 { "Blocco" }
+            }
+
+            div { class: "card group",
+                h2 { class: "first sec", Icon { name: "lock" } "Blocco" }
             p { class: "muted", "Kuracare si chiude da sola dopo qualche minuto senza tocchi." }
             div { class: "chips", role: "group", aria_label: "Minuti prima del blocco",
                 for m in LOCK_MINUTES {
@@ -222,9 +236,13 @@ pub fn Settings() -> Element {
                 }
             }
 
-            h2 { "Le tue liste" }
-            p { class: "muted", "Gesti di cura, stanze, varietà, integratori, pensieri." }
-            button { class: "small", onclick: move |_| app.go(View::Lists), "Apri le tue liste" }
+            }
+
+            div { class: "card group",
+                h2 { class: "first sec", Icon { name: "list" } "Le tue liste" }
+                p { class: "muted", "Gesti di cura, stanze, varietà, integratori, pensieri." }
+                button { class: "small", onclick: move |_| app.go(View::Lists), "Apri le tue liste" }
+            }
 
             div { class: "actions",
                 button { class: "quiet", onclick: move |_| app.back(), "Torna alla Home" }

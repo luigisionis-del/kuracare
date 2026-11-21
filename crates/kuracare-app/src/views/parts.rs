@@ -1,7 +1,46 @@
 use dioxus::prelude::*;
 use kuracare_core::kinds::score;
 
+use kuracare_core::Payload;
+
 use crate::state::{View, use_app};
+
+/// The icon of a kind of record.
+pub fn kind_icon(p: &Payload) -> &'static str {
+    match p {
+        Payload::Checkin(_) | Payload::Questionnaire(_) => "checkin",
+        Payload::Thought(_) => "thought",
+        Payload::Care(_) => "care",
+        Payload::Home(_) => "home",
+        Payload::Reflection(_) => "evening",
+        Payload::Cannabis(_) | Payload::Supplement(_) => "leaf",
+        Payload::Meal(_) => "meal",
+        Payload::Task(_) => "tasks",
+    }
+}
+
+/// Top of every inner screen: back to Home, then the title with its icon.
+#[component]
+pub fn ScreenHead(title: String, icon: Option<&'static str>, subtitle: Option<String>) -> Element {
+    let app = use_app();
+    rsx! {
+        header { class: "screen-head",
+            button {
+                class: "back",
+                r#type: "button",
+                aria_label: "Torna alla Home",
+                onclick: move |_| app.back(),
+                Icon { name: "back" }
+                "Home"
+            }
+            h1 { class: "sec",
+                if let Some(i) = icon { Icon { name: i } }
+                "{title}"
+            }
+            if let Some(s) = subtitle { p { class: "muted", "{s}" } }
+        }
+    }
+}
 
 /// 0-10 answer that starts unanswered and can always be cleared.
 #[component]
@@ -119,6 +158,23 @@ fn icon_paths(name: &str) -> &'static [&'static str] {
             "M12 7.5V12l3 2",
         ],
         "check" => &["M5 12.5l4.2 4.2L19 7"],
+        "palette" => &[
+            "M12 3.5a8.5 8.5 0 1 0 0 17c1.2 0 1.8-.8 1.8-1.7 0-1.2-1-1.6-1-2.6 0-.9.7-1.5 1.6-1.5h2.1c2.2 0 4-1.8 4-4 0-4-3.8-7.2-8.5-7.2z",
+            "M7.8 11.5h.01M10 7.8h.01M14.3 7.8h.01",
+        ],
+        "bell" => &[
+            "M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 1.5h-15z",
+            "M10 20.5a2 2 0 0 0 4 0",
+        ],
+        "pause" => &["M9 6v12M15 6v12"],
+        "lock" => &["M6.5 11h11v9h-11z", "M8.5 11V8a3.5 3.5 0 0 1 7 0v3"],
+        "list" => &["M5 7h14M5 12h14M5 17h9"],
+        "back" => &["M14.5 5.5L8 12l6.5 6.5"],
+        "eye" => &[
+            "M2.5 12s3.5-6.5 9.5-6.5 9.5 6.5 9.5 6.5-3.5 6.5-9.5 6.5S2.5 12 2.5 12z",
+            "M14.8 12a2.8 2.8 0 1 1-5.6 0 2.8 2.8 0 0 1 5.6 0z",
+        ],
+        "close" => &["M7.5 7.5l9 9M16.5 7.5l-9 9"],
         _ => &[],
     }
 }
@@ -137,19 +193,28 @@ pub fn Icon(name: &'static str) -> Element {
     }
 }
 
-/// The Kuracare emblem: a heart, with three saffron threads like the crocus.
+/// The Kuracare emblem (same drawing as the app icon): a heart with three
+/// saffron stigmas, like a crocus flower.
 #[component]
 pub fn Emblem() -> Element {
     rsx! {
         svg { class: "emblem", view_box: "0 0 72 72", "aria-hidden": "true",
             circle { cx: "36", cy: "36", r: "34", fill: "var(--accent-soft)" }
-            path {
-                d: "M36 56s-17-10.6-17-24.4a9.6 9.6 0 0 1 17-6.2 9.6 9.6 0 0 1 17 6.2C53 45.4 36 56 36 56z",
-                fill: "var(--accent)",
-            }
-            path {
-                d: "M36 33V22M36 33l-6-8.5M36 33l6-8.5",
-                stroke: "var(--bloom)", stroke_width: "2.6", stroke_linecap: "round", fill: "none",
+            g { transform: "translate(36 37.5) scale(0.15) translate(-256 -262)",
+                path {
+                    d: "M256 392c-74-46-124-96-124-156 0-40 30-70 66-70 26 0 46 13 58 33 12-20 32-33 58-33 36 0 66 30 66 70 0 60-50 110-124 156z",
+                    fill: "var(--accent)",
+                }
+                g { fill: "none", stroke: "var(--bloom)", stroke_width: "15", stroke_linecap: "round",
+                    path { d: "M256 318C248 262 222 206 192 166" }
+                    path { d: "M256 318C256 254 256 196 256 140" }
+                    path { d: "M256 318C264 262 290 206 320 166" }
+                }
+                g { fill: "var(--bloom)",
+                    ellipse { cx: "188", cy: "158", rx: "16", ry: "21", transform: "rotate(-34 188 158)" }
+                    ellipse { cx: "256", cy: "130", rx: "16", ry: "21" }
+                    ellipse { cx: "324", cy: "158", rx: "16", ry: "21", transform: "rotate(34 324 158)" }
+                }
             }
         }
     }

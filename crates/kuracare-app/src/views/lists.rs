@@ -6,7 +6,7 @@ use kuracare_core::lists::{
 
 use crate::labels::{num, route_label};
 use crate::state::use_app;
-use crate::views::parts::Chip;
+use crate::views::parts::{Chip, Icon, ScreenHead};
 
 /// Strain being edited: numbers as text, so "0,5" works with an Italian keyboard.
 #[derive(Clone, PartialEq)]
@@ -109,10 +109,13 @@ pub fn Lists() -> Element {
 
     rsx! {
         section { class: "fade",
-            h1 { "Le tue liste" }
-            p { class: "muted", "Sono i bottoni da un tocco. I valori li scegli tu: Kuracare non suggerisce varietà né quantità." }
+            ScreenHead {
+                title: "Le tue liste",
+                icon: "list",
+                subtitle: "Sono i bottoni da un tocco. I valori li scegli tu: Kuracare non suggerisce varietà né quantità.",
+            }
 
-            h2 { "Varietà" }
+            h2 { class: "sec", Icon { name: "leaf" } "Varietà" }
             for (i, s) in strains.read().iter().cloned().enumerate() {
                 div { key: "{s.p.id}", class: "card", role: "group", aria_label: if s.p.name.is_empty() { "Nuova varietà".to_string() } else { s.p.name.clone() },
                     label { r#for: "sn{i}", "Nome" }
@@ -149,7 +152,7 @@ pub fn Lists() -> Element {
                 button { class: "small", onclick: move |_| add_strain(StrainGroup::Cbd), "+ Varietà CBD" }
             }
 
-            h2 { "Integratori" }
+            h2 { class: "sec", Icon { name: "leaf" } "Integratori" }
             for (i, s) in supps.read().iter().cloned().enumerate() {
                 div { key: "{s.p.id}", class: "card", role: "group", aria_label: if s.p.name.is_empty() { "Nuovo integratore".to_string() } else { s.p.name.clone() },
                     label { r#for: "in{i}", "Nome" }
@@ -167,12 +170,12 @@ pub fn Lists() -> Element {
                 "+ Integratore"
             }
 
-            LabelList { title: "Gesti di cura", placeholder: "Un nuovo gesto", items: care }
-            LabelList { title: "Stanze", placeholder: "Una nuova stanza", items: rooms }
-            LabelList { title: "Cose da fare in casa", placeholder: "Una nuova attività", items: activities }
-            LabelList { title: "Pensieri che tornano", placeholder: "Una nuova etichetta", items: thoughts }
+            LabelList { title: "Gesti di cura", icon: "care", placeholder: "Un nuovo gesto", items: care }
+            LabelList { title: "Stanze", icon: "home", placeholder: "Una nuova stanza", items: rooms }
+            LabelList { title: "Cose da fare in casa", icon: "home", placeholder: "Una nuova attività", items: activities }
+            LabelList { title: "Pensieri che tornano", icon: "thought", placeholder: "Una nuova etichetta", items: thoughts }
 
-            div { class: "actions",
+            div { class: "actions dock",
                 button { class: "primary", onclick: save, "Salva le liste" }
                 button { class: "quiet", onclick: move |_| app.back(), "Lascia com'erano" }
             }
@@ -181,7 +184,12 @@ pub fn Lists() -> Element {
 }
 
 #[component]
-fn LabelList(title: String, placeholder: String, items: Signal<Vec<String>>) -> Element {
+fn LabelList(
+    title: String,
+    icon: &'static str,
+    placeholder: String,
+    items: Signal<Vec<String>>,
+) -> Element {
     let mut items = items;
     let mut fresh = use_signal(String::new);
     let add = move |e: FormEvent| {
@@ -193,13 +201,18 @@ fn LabelList(title: String, placeholder: String, items: Signal<Vec<String>>) -> 
         }
     };
     rsx! {
-        h2 { "{title}" }
+        h2 { class: "sec", Icon { name: icon } "{title}" }
         div { class: "chips",
             for (i, l) in items.read().iter().cloned().enumerate() {
-                button { key: "{l}", class: "chip", aria_label: "Togli {l}", onclick: move |_| { items.write().remove(i); }, "{l} ×" }
+                button {
+                    key: "{l}", class: "chip removable", aria_label: "Togli {l}",
+                    onclick: move |_| { items.write().remove(i); },
+                    "{l}"
+                    Icon { name: "close" }
+                }
             }
         }
-        form { class: "row", onsubmit: add,
+        form { class: "row add", onsubmit: add,
             input { r#type: "text", aria_label: "{placeholder}", placeholder: "{placeholder}", value: "{fresh}", oninput: move |e| fresh.set(e.value()) }
             button { class: "small", r#type: "submit", "Aggiungi" }
         }

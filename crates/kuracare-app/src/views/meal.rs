@@ -3,7 +3,7 @@ use kuracare_core::kinds::{Meal as MealPayload, MealType, Payload};
 
 use crate::labels::meal_label;
 use crate::state::use_app;
-use crate::views::parts::Chip;
+use crate::views::parts::{Chip, ScreenHead};
 
 #[component]
 pub fn Meal(meal_type: Option<MealType>) -> Element {
@@ -27,7 +27,7 @@ pub fn Meal(meal_type: Option<MealType>) -> Element {
 
     rsx! {
         section { class: "fade",
-            h1 { "Un pasto" }
+            ScreenHead { title: "Un pasto", icon: "meal" }
             div { class: "chips", role: "group", aria_label: "Quale pasto",
                 for t in MealType::ALL {
                     Chip { key: "{t:?}", label: meal_label(t), pressed: kind() == t, onclick: move |_| kind.set(t) }

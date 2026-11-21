@@ -3,7 +3,7 @@ use kuracare_core::settings::{self, Settings, TimeWindow};
 
 use crate::platform::vault;
 use crate::state::use_app;
-use crate::views::parts::Emblem;
+use crate::views::parts::{Emblem, Icon};
 
 const MIN_LENGTH: usize = 10;
 const STEPS: usize = 5;
@@ -17,6 +17,7 @@ pub fn Onboarding() -> Element {
     let mut understood = use_signal(|| false);
     let mut windows = use_signal(Vec::<TimeWindow>::new);
     let mut busy = use_signal(|| false);
+    let mut visible = use_signal(|| false);
     let mut error = use_signal(|| None::<String>);
 
     let len = pass.read().chars().count();
@@ -110,12 +111,24 @@ pub fn Onboarding() -> Element {
                     h1 { "La tua passphrase" }
                     p { class: "muted", "Qualche parola che per te ha senso funziona meglio di una password complicata, per esempio quattro parole a caso." }
                     label { r#for: "pp", "Passphrase" }
-                    input {
-                        id: "pp",
-                        r#type: "password",
-                        autocomplete: "new-password",
-                        value: "{pass}",
-                        oninput: move |e| pass.set(e.value()),
+                    div { class: "pass-row",
+                        input {
+                            id: "pp",
+                            r#type: if visible() { "text" } else { "password" },
+                            autocomplete: "new-password",
+                            autocapitalize: "off",
+                            spellcheck: "false",
+                            value: "{pass}",
+                            oninput: move |e| pass.set(e.value()),
+                        }
+                        button {
+                            class: "eye",
+                            r#type: "button",
+                            aria_label: if visible() { "Nascondi la passphrase" } else { "Mostra la passphrase" },
+                            aria_pressed: visible().to_string(),
+                            onclick: move |_| visible.toggle(),
+                            Icon { name: "eye" }
+                        }
                     }
                     p { class: "hint",
                         "Almeno {MIN_LENGTH} caratteri"
@@ -125,7 +138,7 @@ pub fn Onboarding() -> Element {
                     label { r#for: "pp2", "Scrivila di nuovo" }
                     input {
                         id: "pp2",
-                        r#type: "password",
+                        r#type: if visible() { "text" } else { "password" },
                         autocomplete: "new-password",
                         value: "{confirm}",
                         oninput: move |e| confirm.set(e.value()),
@@ -152,7 +165,7 @@ pub fn Onboarding() -> Element {
                     h1 { "Quando ti va di sentirti chiedere come stai?" }
                     p { "Puoi scegliere uno o più momenti della giornata. Saranno inviti, mai obblighi, e potrai cambiarli quando vuoi." }
                     for (i, w) in windows.read().iter().cloned().enumerate() {
-                        div { key: "{i}", class: "card row",
+                        div { key: "{i}", class: "window-row",
                             label { class: "sr", r#for: "ws{i}", "Dalle" }
                             input {
                                 id: "ws{i}",
@@ -160,6 +173,7 @@ pub fn Onboarding() -> Element {
                                 value: "{w.start}",
                                 oninput: move |e| windows.write()[i].start = e.value(),
                             }
+                            span { class: "to", "aria-hidden": "true", "→" }
                             label { class: "sr", r#for: "we{i}", "alle" }
                             input {
                                 id: "we{i}",

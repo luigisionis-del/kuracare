@@ -2,7 +2,7 @@ use dioxus::prelude::*;
 
 use crate::platform::vault;
 use crate::state::{Phase, use_app};
-use crate::views::parts::Emblem;
+use crate::views::parts::{Emblem, Icon};
 
 const CONFIRM_WORD: &str = "CANCELLA";
 
@@ -14,6 +14,7 @@ pub fn Unlock() -> Element {
     let mut error = use_signal(|| None::<String>);
     let mut forgot = use_signal(|| false);
     let mut confirm = use_signal(String::new);
+    let mut visible = use_signal(|| false);
 
     let submit = move |e: FormEvent| {
         e.prevent_default();
@@ -56,18 +57,30 @@ pub fn Unlock() -> Element {
 
     rsx! {
         if !forgot() {
-            section { class: "fade",
+            section { class: "fade unlock",
                 Emblem {}
                 h1 { "Che bello rivederti" }
                 p { class: "muted", "Kuracare è chiusa per proteggere i tuoi dati." }
                 form { onsubmit: submit,
                     label { r#for: "pp", "Passphrase" }
-                    input {
-                        id: "pp",
-                        r#type: "password",
-                        autocomplete: "current-password",
-                        value: "{pass}",
-                        oninput: move |e| pass.set(e.value()),
+                    div { class: "pass-row",
+                        input {
+                            id: "pp",
+                            r#type: if visible() { "text" } else { "password" },
+                            autocomplete: "current-password",
+                            autocapitalize: "off",
+                            spellcheck: "false",
+                            value: "{pass}",
+                            oninput: move |e| pass.set(e.value()),
+                        }
+                        button {
+                            class: "eye",
+                            r#type: "button",
+                            aria_label: if visible() { "Nascondi la passphrase" } else { "Mostra la passphrase" },
+                            aria_pressed: visible().to_string(),
+                            onclick: move |_| visible.toggle(),
+                            Icon { name: "eye" }
+                        }
                     }
                     if let Some(err) = error() {
                         p { class: "error", role: "alert", "{err}" }

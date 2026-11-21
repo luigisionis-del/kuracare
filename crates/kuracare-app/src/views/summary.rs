@@ -11,7 +11,7 @@ use kuracare_core::time;
 
 use crate::labels::{MONTHS, WEEKDAYS, checkin_label, route_label};
 use crate::state::use_app;
-use crate::views::parts::{Chip, Icon};
+use crate::views::parts::{Chip, Icon, ScreenHead};
 
 const DAY_INITIALS: [&str; 7] = ["L", "M", "M", "G", "V", "S", "D"];
 
@@ -74,6 +74,10 @@ pub fn Summary() -> Element {
 
     rsx! {
         section { class: "fade summary",
+            ScreenHead {
+                title: if offset() == 0 { "La tua settimana" } else { "Un'altra settimana" },
+                icon: "today",
+            }
             div { class: "week-nav",
                 button {
                     class: "small", aria_label: "Settimana precedente",
@@ -81,8 +85,7 @@ pub fn Summary() -> Element {
                     "‹"
                 }
                 div { class: "week-title",
-                    h1 { if offset() == 0 { "La tua settimana" } else { "Una settimana fa" } }
-                    p { class: "muted", {week_range(s.start, s.end)} }
+                    p { {week_range(s.start, s.end)} }
                 }
                 button {
                     class: "small", aria_label: "Settimana successiva",

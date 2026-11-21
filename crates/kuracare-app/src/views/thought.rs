@@ -2,7 +2,7 @@ use dioxus::prelude::*;
 use kuracare_core::kinds::{Payload, Thought as ThoughtPayload};
 
 use crate::state::use_app;
-use crate::views::parts::Chip;
+use crate::views::parts::{Chip, ScreenHead};
 
 #[component]
 pub fn Thought() -> Element {
@@ -26,8 +26,11 @@ pub fn Thought() -> Element {
 
     rsx! {
         section { class: "fade",
-            h1 { "Un pensiero che torna" }
-            p { class: "muted", "Se vuoi, dagli un nome. Non serve altro." }
+            ScreenHead {
+                title: "Un pensiero che torna",
+                icon: "thought",
+                subtitle: "Se vuoi, dagli un nome. Non serve altro.",
+            }
             div { class: "chips", role: "group", aria_label: "Che tipo di pensiero",
                 for l in labels {
                     Chip {

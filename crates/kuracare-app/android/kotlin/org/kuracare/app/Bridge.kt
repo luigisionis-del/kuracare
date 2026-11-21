@@ -232,7 +232,7 @@ object Bridge {
             .build()
         val b = NotificationCompat.Builder(ctx, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notify)
-            .setColor(0xFF3F6B5A.toInt())
+            .setColor(0xFF5A3D8A.toInt())
             .setContentTitle(it.title)
             .setContentText(it.body)
             .setStyle(NotificationCompat.BigTextStyle().bigText(it.body))

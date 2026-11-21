@@ -6,7 +6,7 @@ use kuracare_core::kinds::{Payload, Questionnaire as Answers};
 use kuracare_core::questionnaires::{self, score};
 
 use crate::state::use_app;
-use crate::views::parts::Chip;
+use crate::views::parts::{Chip, ScreenHead};
 
 #[component]
 pub fn Questionnaire(id: String) -> Element {
@@ -44,8 +44,7 @@ pub fn Questionnaire(id: String) -> Element {
 
     rsx! {
         section { class: "fade",
-            h1 { "{def.name}" }
-            p { class: "muted", "{def.intro}" }
+            ScreenHead { title: def.name.clone(), icon: "checkin", subtitle: def.intro.clone() }
             for (i, item) in def.items.iter().enumerate() {
                 div { key: "{i}", class: "card q-item",
                     p { class: "label", "{item}" }
@@ -64,7 +63,7 @@ pub fn Questionnaire(id: String) -> Element {
                     }
                 }
             }
-            div { class: "actions",
+            div { class: "actions dock",
                 button { class: "primary", onclick: save, "Fatto" }
                 button { class: "quiet", onclick: move |_| app.back(), "Non ora" }
             }

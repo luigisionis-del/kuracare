@@ -272,3 +272,49 @@ details.numbers summary { cursor: pointer; color: var(--muted); font-weight: 600
 .compare-label { color: var(--muted); }
 .compare-val { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; }
 .note { font-size: 0.92rem; color: var(--muted); border-top: 1px solid var(--border); padding-top: var(--s3); margin-top: var(--s4); }
+
+/* ---------- inner screens: header with back to Home ---------- */
+.screen-head { margin-bottom: var(--s4); }
+.screen-head h1 { margin: var(--s2) 0 var(--s2); display: flex; align-items: center; gap: var(--s2); }
+.screen-head h1 .icon { width: 24px; height: 24px; }
+.screen-head p { margin: 0; }
+button.back {
+  min-height: 44px; padding: 0 var(--s3) 0 var(--s1); margin-left: calc(-1 * var(--s1));
+  background: transparent; border-color: transparent; color: var(--muted); font-weight: 600;
+  display: inline-flex; align-items: center; gap: var(--s1);
+}
+button.back .icon { stroke: var(--muted); }
+
+/* Main actions stay under the thumb on long screens. */
+.actions.dock {
+  position: sticky; bottom: 0; z-index: 5;
+  margin: var(--s5) calc(-1 * var(--s4)) 0; padding: var(--s3) var(--s4) calc(var(--s3) + env(safe-area-inset-bottom));
+  background: linear-gradient(to top, var(--bg2) 72%, transparent);
+}
+section:has(.actions.dock) { padding-bottom: var(--s8); }
+
+/* Cards that group settings. */
+.card.group { padding: var(--s4) var(--s4) var(--s3); }
+.card.group h2 { margin-bottom: var(--s3); }
+.card.group .card.soft { margin: var(--s3) 0; }
+.window-row { display: flex; align-items: center; gap: var(--s2); flex-wrap: wrap; margin-bottom: var(--s2); }
+.window-row .to { color: var(--muted); }
+
+/* Lists: removable chips. */
+.chip.removable { display: inline-flex; align-items: center; gap: var(--s1); padding-right: var(--s3); }
+.chip.removable .icon { width: 16px; height: 16px; stroke: var(--muted); }
+
+/* Entries with the icon of their kind. */
+.entry { display: flex; align-items: center; gap: var(--s2); }
+.entry .icon { width: 18px; height: 18px; }
+.entry .time { margin-right: 0; }
+.enrich-what { display: flex; align-items: center; gap: var(--s2); margin-bottom: var(--s1); }
+.enrich-card p.enrich-what + p, .enrich-card .muted { margin-top: 0; }
+
+/* Unlock. */
+section.unlock .emblem { width: 88px; height: 88px; margin: var(--s8) 0 var(--s4); }
+.pass-row { display: flex; gap: var(--s2); align-items: center; }
+.pass-row input { flex: 1; min-width: 0; }
+button.eye { width: var(--tap); padding: 0; display: grid; place-items: center; }
+button.eye[aria-pressed='true'] { background: var(--accent-soft); }
+.week-title p { margin: 0; font-weight: 700; font-variant-numeric: tabular-nums; }

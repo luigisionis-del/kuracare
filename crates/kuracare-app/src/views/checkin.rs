@@ -4,7 +4,7 @@ use kuracare_core::kinds::{Checkin as CheckinPayload, CheckinItem, Payload};
 
 use crate::labels::checkin_label;
 use crate::state::use_app;
-use crate::views::parts::Scale;
+use crate::views::parts::{Scale, ScreenHead};
 
 #[component]
 pub fn Checkin(origin: Origin) -> Element {
@@ -23,8 +23,11 @@ pub fn Checkin(origin: Origin) -> Element {
 
     rsx! {
         section { class: "fade",
-            h1 { "Come stai, adesso?" }
-            p { class: "muted", "Rispondi solo a ciò che ti va: ogni voce si può lasciare vuota." }
+            ScreenHead {
+                title: "Come stai, adesso?",
+                icon: "checkin",
+                subtitle: "Rispondi solo a ciò che ti va: ogni voce si può lasciare vuota.",
+            }
             for item in CheckinItem::ALL {
                 Scale {
                     key: "{item:?}",
@@ -36,7 +39,7 @@ pub fn Checkin(origin: Origin) -> Element {
                     onchange: move |v| item.set(&mut answers.write(), v),
                 }
             }
-            div { class: "actions",
+            div { class: "actions dock",
                 button { class: "primary", onclick: save, "Fatto" }
                 button { class: "quiet", onclick: move |_| app.back(), "Non ora" }
             }
