@@ -180,6 +180,45 @@ pub struct Meal {
     pub photo_id: Option<String>,
 }
 
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum TaskStatus {
+    #[default]
+    Open,
+    Done,
+    /// Let go on purpose: not a failure.
+    LetGo,
+}
+
+/// Something to do. The event `ts` is when it was written down.
+#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Task {
+    /// Free text: device only, never in a notification, never exported for research.
+    pub title: String,
+    /// Local day "YYYY-MM-DD".
+    pub due_date: Option<String>,
+    /// Local "HH:MM", only together with `due_date`: an invitation is sent then.
+    pub due_time: Option<String>,
+    /// Perceived effort 1-5.
+    pub effort: Option<u8>,
+    pub status: TaskStatus,
+    /// When it was done or let go (ISO with offset).
+    pub closed_at: Option<String>,
+}
+
+impl Task {
+    pub fn new(title: impl Into<String>) -> Self {
+        Self {
+            title: title.into(),
+            ..Default::default()
+        }
+    }
+    pub fn is_open(&self) -> bool {
+        self.status == TaskStatus::Open
+    }
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub enum Payload {
     Checkin(Checkin),
@@ -190,10 +229,11 @@ pub enum Payload {
     Cannabis(Cannabis),
     Supplement(Supplement),
     Meal(Meal),
+    Task(Task),
 }
 
 /// Every kind with its current schema version.
-pub const KINDS: [(&str, u32); 8] = [
+pub const KINDS: [(&str, u32); 9] = [
     ("checkin", 1),
     ("thought", 1),
     ("care", 1),
@@ -202,6 +242,7 @@ pub const KINDS: [(&str, u32); 8] = [
     ("cannabis", 1),
     ("supplement", 1),
     ("meal", 1),
+    ("task", 1),
 ];
 
 /// Allow-list for research exports. Never free text, photos or preset ids.
@@ -214,6 +255,7 @@ pub fn research_fields(kind: &str) -> &'static [&'static str] {
         "cannabis" => &["strain", "thcPct", "cbdPct", "amount", "unit", "route"],
         "supplement" => &["name", "amount", "unit"],
         "meal" => &["mealType"],
+        "task" => &["dueDate", "dueTime", "effort", "status", "closedAt"],
         _ => &[],
     }
 }
@@ -229,6 +271,7 @@ impl Payload {
             Self::Cannabis(_) => "cannabis",
             Self::Supplement(_) => "supplement",
             Self::Meal(_) => "meal",
+            Self::Task(_) => "task",
         }
     }
 
@@ -246,6 +289,7 @@ impl Payload {
             Self::Cannabis(p) => serde_json::to_value(p)?,
             Self::Supplement(p) => serde_json::to_value(p)?,
             Self::Meal(p) => serde_json::to_value(p)?,
+            Self::Task(p) => serde_json::to_value(p)?,
         })
     }
 
@@ -259,6 +303,7 @@ impl Payload {
             "cannabis" => Self::Cannabis(serde_json::from_value(v)?),
             "supplement" => Self::Supplement(serde_json::from_value(v)?),
             "meal" => Self::Meal(serde_json::from_value(v)?),
+            "task" => Self::Task(serde_json::from_value(v)?),
             other => return Err(Error::Unsupported(format!("event kind {other}"))),
         })
     }
@@ -299,7 +344,14 @@ mod tests {
     #[test]
     fn research_allow_list_never_has_free_text_or_photos() {
         for (kind, _) in KINDS {
-            for forbidden in ["note", "text", "description", "photoId", "presetId"] {
+            for forbidden in [
+                "note",
+                "text",
+                "description",
+                "photoId",
+                "presetId",
+                "title",
+            ] {
                 assert!(
                     !research_fields(kind).contains(&forbidden),
                     "{kind}.{forbidden}"
@@ -364,6 +416,12 @@ mod tests {
                 meal_type: MealType::Lunch,
                 description: None,
                 photo_id: None,
+            }),
+            Payload::Task(Task {
+                due_date: Some("2026-11-22".into()),
+                due_time: Some("10:00".into()),
+                effort: Some(2),
+                ..Task::new("Chiamare il medico")
             }),
         ];
         assert_eq!(samples.len(), KINDS.len());

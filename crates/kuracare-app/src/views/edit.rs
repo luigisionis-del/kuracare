@@ -1,5 +1,5 @@
 use dioxus::prelude::*;
-use kuracare_core::kinds::{CheckinItem, MealType, Payload, Route, positive};
+use kuracare_core::kinds::{CheckinItem, MealType, Payload, Route, TaskStatus, positive};
 use kuracare_core::{Event, repo, time};
 
 use crate::labels::{checkin_label, describe, meal_label, num, route_label};
@@ -9,6 +9,29 @@ use crate::state::use_app;
 use crate::views::parts::{Chip, Scale};
 
 const DURATIONS: [u32; 5] = [5, 10, 20, 30, 60];
+
+pub const EFFORT: [(u8, &str); 5] = [
+    (1, "1 · leggera"),
+    (2, "2"),
+    (3, "3"),
+    (4, "4"),
+    (5, "5 · impegnativa"),
+];
+
+pub fn status_label(s: TaskStatus) -> &'static str {
+    match s {
+        TaskStatus::Open => "Da fare",
+        TaskStatus::Done => "Fatta",
+        TaskStatus::LetGo => "Lasciata andare",
+    }
+}
+
+fn valid_hhmm(s: &str) -> bool {
+    s.len() == 5
+        && s.as_bytes()[2] == b':'
+        && s[..2].parse::<u8>().is_ok_and(|h| h < 24)
+        && s[3..].parse::<u8>().is_ok_and(|m| m < 60)
+}
 
 fn int(n: Option<u32>) -> String {
     n.map(|n| n.to_string()).unwrap_or_default()
@@ -60,7 +83,8 @@ pub fn Edit(id: String) -> Element {
 
     let save = move |_| {
         let mut e: Event = draft.read().clone();
-        if let Some(ts) = time::from_local_input(&when.read()) {
+        let is_task = matches!(e.payload, Payload::Task(_));
+        if !is_task && let Some(ts) = time::from_local_input(&when.read()) {
             e.ts = ts;
         }
         match &mut e.payload {
@@ -94,6 +118,29 @@ pub fn Edit(id: String) -> Element {
                     .map(|d| d.trim().to_owned())
                     .filter(|d| !d.is_empty())
             }
+            Payload::Task(t) => {
+                t.title = t.title.trim().to_owned();
+                if t.title.is_empty() {
+                    t.title = "Senza titolo".into();
+                }
+                t.due_date = t
+                    .due_date
+                    .take()
+                    .filter(|d| d.parse::<jiff::civil::Date>().is_ok());
+                t.due_time = t
+                    .due_time
+                    .take()
+                    .filter(|h| t.due_date.is_some() && valid_hhmm(h));
+                let was_open = match &original.payload {
+                    Payload::Task(o) => o.is_open(),
+                    _ => true,
+                };
+                if t.is_open() {
+                    t.closed_at = None;
+                } else if was_open {
+                    t.closed_at = Some(time::now_iso());
+                }
+            }
             _ => {}
         }
         app.change(&e);
@@ -111,8 +158,10 @@ pub fn Edit(id: String) -> Element {
     rsx! {
         section { class: "fade",
             h1 { {describe(&d)} }
-            label { r#for: "when", "Quando" }
-            input { id: "when", r#type: "datetime-local", value: "{when}", oninput: move |e| when.set(e.value()) }
+            if !matches!(d.payload, Payload::Task(_)) {
+                label { r#for: "when", "Quando" }
+                input { id: "when", r#type: "datetime-local", value: "{when}", oninput: move |e| when.set(e.value()) }
+            }
 
             match &d.payload {
                 Payload::Checkin(c) => rsx! {
@@ -239,6 +288,64 @@ pub fn Edit(id: String) -> Element {
                     input {
                         id: "tn", r#type: "text", maxlength: "280", value: t.note.clone().unwrap_or_default(),
                         oninput: move |e| if let Payload::Thought(t) = &mut draft.write().payload { t.note = Some(e.value()) },
+                    }
+                },
+                Payload::Task(t) => rsx! {
+                    label { r#for: "tt", "Cosa" }
+                    input {
+                        id: "tt", r#type: "text", maxlength: "140", value: "{t.title}",
+                        oninput: move |e| if let Payload::Task(t) = &mut draft.write().payload { t.title = e.value() },
+                    }
+                    p { class: "hint", "Resta solo qui: nelle notifiche non compare mai." }
+                    div { class: "grid2",
+                        div {
+                            label { r#for: "td", "Per quando " span { class: "muted", "(se vuoi)" } }
+                            input {
+                                id: "td", r#type: "date", value: t.due_date.clone().unwrap_or_default(),
+                                oninput: move |e| if let Payload::Task(t) = &mut draft.write().payload {
+                                    let v = e.value();
+                                    t.due_date = (!v.is_empty()).then_some(v);
+                                },
+                            }
+                        }
+                        if t.due_date.is_some() {
+                            div {
+                                label { r#for: "th", "A che ora" }
+                                input {
+                                    id: "th", r#type: "time", value: t.due_time.clone().unwrap_or_default(),
+                                    oninput: move |e| if let Payload::Task(t) = &mut draft.write().payload {
+                                        let v = e.value();
+                                        t.due_time = (!v.is_empty()).then_some(v);
+                                    },
+                                }
+                            }
+                        }
+                    }
+                    if t.due_time.is_some() {
+                        p { class: "hint", "A quell'ora, se gli inviti sono attivi, arriva un invito senza titolo." }
+                    }
+                    p { class: "label", "Quanto ti sembra impegnativa" }
+                    div { class: "chips", role: "group", aria_label: "Quanto ti sembra impegnativa",
+                        for (n, l) in EFFORT {
+                            Chip {
+                                key: "{n}", label: l, pressed: t.effort == Some(n),
+                                onclick: move |_| if let Payload::Task(t) = &mut draft.write().payload {
+                                    t.effort = if t.effort == Some(n) { None } else { Some(n) };
+                                },
+                            }
+                        }
+                    }
+                    p { class: "label", "Com'è andata" }
+                    div { class: "chips", role: "group", aria_label: "Com'è andata",
+                        for st in [TaskStatus::Open, TaskStatus::Done, TaskStatus::LetGo] {
+                            Chip {
+                                key: "{st:?}", label: status_label(st), pressed: t.status == st,
+                                onclick: move |_| if let Payload::Task(t) = &mut draft.write().payload { t.status = st },
+                            }
+                        }
+                    }
+                    if t.status == TaskStatus::LetGo {
+                        p { class: "hint", "Lasciar andare una cosa è una scelta, non un fallimento." }
                     }
                 },
                 Payload::Reflection(r) => rsx! {

@@ -7,8 +7,9 @@ use std::time::Duration;
 use dioxus::prelude::*;
 use kuracare_core::lists::Lists;
 use kuracare_core::settings::Settings;
-use kuracare_core::{Event, Origin, Payload, lists, recognition, repo, settings};
+use kuracare_core::{Event, Origin, Payload, lists, recognition, reminders, repo, settings};
 
+use crate::notify::{self, Tapped};
 use crate::platform::vault;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -21,12 +22,13 @@ pub enum Phase {
 #[derive(Clone, Debug, PartialEq)]
 pub enum View {
     Home,
-    Checkin,
+    Checkin(Origin),
     Thought,
     Meal(Option<kuracare_core::kinds::MealType>),
     Edit(String),
     Enrich,
     Lists,
+    Settings,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -57,6 +59,8 @@ pub struct AppState {
     pub toast: Signal<Option<Toast>>,
     toast_seq: Signal<u64>,
     last_phrase: Signal<Option<&'static str>>,
+    /// An invitation tapped while Kuracare was locked: followed after unlocking.
+    tapped: Signal<Option<Tapped>>,
 }
 
 pub fn use_app() -> AppState {
@@ -83,19 +87,59 @@ impl AppState {
             toast: Signal::new(None),
             toast_seq: Signal::new(0),
             last_phrase: Signal::new(None),
+            tapped: Signal::new(None),
         }
     }
 
     /// Loads everything after a successful create/unlock (called on the UI thread).
     pub fn opened(mut self) -> kuracare_core::Result<()> {
         let v = vault();
-        self.settings.set(settings::load(&v)?);
+        let mut s = settings::load(&v)?;
+        if s.invite_salt == 0 {
+            s.invite_salt = reminders::new_salt();
+            settings::save(&v, &s)?;
+        }
+        self.settings.set(s);
         self.lists.set(lists::load(&v)?);
         self.events.set(repo::load(&v)?);
         self.view.set(View::Home);
         self.phase.set(Phase::Open);
         touch();
+        self.sync_invitations();
+        if let Some(t) = self.tapped.take() {
+            self.follow(t);
+        }
         Ok(())
+    }
+
+    /// Recomputes the invitations and hands them to the phone. Called after
+    /// every change that can move them (settings, check-ins, tasks).
+    pub fn sync_invitations(self) {
+        let plan = reminders::plan(
+            &self.settings.peek(),
+            &self.events.peek(),
+            &kuracare_core::time::now(),
+        );
+        notify::set_plan(&plan.to_json());
+    }
+
+    /// The user tapped an invitation.
+    pub fn tapped(mut self, t: Tapped) {
+        if *self.phase.peek() == Phase::Open {
+            self.follow(t);
+        } else {
+            self.tapped.set(Some(t));
+        }
+    }
+
+    fn follow(self, t: Tapped) {
+        if t.is_test() {
+            return;
+        }
+        match t.kind.as_str() {
+            "checkin" => self.go(View::Checkin(Origin::Prompted)),
+            _ => self.back(),
+        }
     }
 
     pub fn lock(mut self) {
@@ -126,13 +170,20 @@ impl AppState {
         }
     }
 
-    pub fn record(mut self, payload: Payload) -> Option<Event> {
-        let e = Event::new(payload, Origin::Spontaneous);
+    pub fn record(self, payload: Payload) -> Option<Event> {
+        self.record_as(payload, Origin::Spontaneous)
+    }
+
+    pub fn record_as(mut self, payload: Payload, origin: Origin) -> Option<Event> {
+        let e = Event::new(payload, origin);
         match repo::save(&vault(), &e) {
             Ok(()) => {
-                let mut list = self.events.write();
-                list.push(e.clone());
-                repo::sort_newest_first(&mut list);
+                {
+                    let mut list = self.events.write();
+                    list.push(e.clone());
+                    repo::sort_newest_first(&mut list);
+                }
+                self.sync_if_relevant(&e);
                 Some(e)
             }
             Err(err) => {
@@ -145,18 +196,30 @@ impl AppState {
     pub fn change(mut self, e: &Event) {
         match repo::update(&vault(), e) {
             Ok(saved) => {
-                let mut list = self.events.write();
-                list.retain(|x| x.id != saved.id);
-                list.push(saved);
-                repo::sort_newest_first(&mut list);
+                {
+                    let mut list = self.events.write();
+                    list.retain(|x| x.id != saved.id);
+                    list.push(saved);
+                    repo::sort_newest_first(&mut list);
+                }
+                self.sync_if_relevant(e);
             }
             Err(err) => self.error(err),
         }
     }
 
+    fn sync_if_relevant(self, e: &Event) {
+        if matches!(e.payload, Payload::Checkin(_) | Payload::Task(_)) {
+            self.sync_invitations();
+        }
+    }
+
     pub fn forget(mut self, e: &Event) {
         match repo::remove(&vault(), e) {
-            Ok(()) => self.events.write().retain(|x| x.id != e.id),
+            Ok(()) => {
+                self.events.write().retain(|x| x.id != e.id);
+                self.sync_if_relevant(e);
+            }
             Err(err) => self.error(err),
         }
     }
@@ -176,7 +239,10 @@ impl AppState {
         let mut s = self.settings.peek().clone();
         f(&mut s);
         match settings::save(&vault(), &s) {
-            Ok(()) => self.settings.set(s),
+            Ok(()) => {
+                self.settings.set(s);
+                self.sync_invitations();
+            }
             Err(err) => self.error(err),
         }
     }

@@ -164,3 +164,15 @@ ul.today, ul.plain { list-style: none; padding: 0; margin: 0 0 1rem; }
 .entry .time { color: var(--muted); font-variant-numeric: tabular-nums; margin-right: 0.4rem; }
 section { padding-bottom: 5rem; }
 .card.update { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
+
+/* Cose da fare */
+form.add { flex-wrap: nowrap; margin-bottom: 0.5rem; }
+form.add input { flex: 1; min-width: 0; }
+ul.tasks { list-style: none; padding: 0; margin: 0 0 0.75rem; }
+ul.tasks li { display: flex; align-items: center; gap: 0.5rem; }
+ul.tasks .entry { flex: 1; min-width: 0; }
+ul.tasks .chip.small { min-height: 40px; padding: 0 0.8rem; flex: none; }
+input[type='date'] {
+  min-height: var(--tap); padding: 0 0.9rem; border-radius: 12px; border: 1px solid var(--border);
+  background: var(--surface); color: var(--text); font: inherit; max-width: 100%; box-sizing: border-box;
+}

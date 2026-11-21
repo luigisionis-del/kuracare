@@ -10,10 +10,16 @@ base64 = "0.23.1"
 dioxus = { version = "=0.7.9", default-features = false, features = ["launch", "lib", "logger"] }
 image = { version = "0.25.10", default-features = false, features = ["jpeg", "png"] }
 jiff = "1.0.1"
-kuracare-core = { version = "0.4.0", path = "../kuracare-core" }
+kuracare-core = { version = "0.5.0", path = "../kuracare-core" }
 tokio = { version = "1.54.1", features = ["rt", "time"] }
 
 [features]
 default = []
 desktop = ["dioxus/desktop"]
 mobile = ["dioxus/mobile"]
+
+# Invitations: JNI bridge to the Kotlin side (src/notify.rs). Same versions
+# that wry/tao already bring in.
+[target.'cfg(target_os = "android")'.dependencies]
+jni = "=0.21.1"
+ndk-context = "0.1.1"

@@ -1,6 +1,7 @@
 //! Kuracare app (Dioxus). All logic and data live in `kuracare-core`.
 
 mod labels;
+mod notify;
 mod photo;
 mod platform;
 mod state;
@@ -49,6 +50,16 @@ fn App() -> Element {
         }
     });
 
+    // An invitation tapped in the notification shade (checked every second).
+    use_future(move || async move {
+        loop {
+            tokio::time::sleep(Duration::from_secs(1)).await;
+            if let Some(t) = notify::take_tapped() {
+                app.tapped(t);
+            }
+        }
+    });
+
     // Android back gesture: sub-views push a history entry; going back shows Home.
     use_future(move || async move {
         let mut ev = document::eval(
@@ -75,12 +86,13 @@ fn App() -> Element {
                 Phase::Open => rsx! {
                     match view {
                         View::Home => rsx! { views::home::Home {} },
-                        View::Checkin => rsx! { views::checkin::Checkin {} },
+                        View::Checkin(origin) => rsx! { views::checkin::Checkin { origin } },
                         View::Thought => rsx! { views::thought::Thought {} },
                         View::Meal(t) => rsx! { views::meal::Meal { meal_type: t } },
                         View::Edit(id) => rsx! { views::edit::Edit { key: "{id}", id: id.clone() } },
                         View::Enrich => rsx! { views::enrich::Enrich {} },
                         View::Lists => rsx! { views::lists::Lists {} },
+                        View::Settings => rsx! { views::settings::Settings {} },
                     }
                     ToastBar {}
                 },

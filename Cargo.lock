@@ -2475,19 +2475,21 @@ dependencies = [
 
 [[package]]
 name = "kuracare-app"
-version = "0.4.0"
+version = "0.5.0"
 dependencies = [
  "base64 0.23.1",
  "dioxus",
  "image",
  "jiff",
+ "jni 0.21.1",
  "kuracare-core",
+ "ndk-context",
  "tokio",
 ]
 
 [[package]]
 name = "kuracare-core"
-version = "0.4.0"
+version = "0.5.0"
 dependencies = [
  "aes-gcm",
  "aes-kw",

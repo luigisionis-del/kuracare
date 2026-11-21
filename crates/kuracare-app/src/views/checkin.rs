@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use kuracare_core::Origin;
 use kuracare_core::kinds::{Checkin as CheckinPayload, CheckinItem, Payload};
 
 use crate::labels::checkin_label;
@@ -6,13 +7,13 @@ use crate::state::use_app;
 use crate::views::parts::Scale;
 
 #[component]
-pub fn Checkin() -> Element {
+pub fn Checkin(origin: Origin) -> Element {
     let app = use_app();
     let mut answers = use_signal(CheckinPayload::empty);
 
     let save = move |_| {
         if app
-            .record(Payload::Checkin(answers.read().clone()))
+            .record_as(Payload::Checkin(answers.read().clone()), origin)
             .is_some()
         {
             app.show_toast(app.recognition(), None);

@@ -12,6 +12,7 @@ pub mod kinds;
 pub mod lists;
 pub mod migrations;
 pub mod recognition;
+pub mod reminders;
 pub mod repo;
 pub mod settings;
 pub mod store;

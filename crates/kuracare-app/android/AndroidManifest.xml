@@ -6,9 +6,14 @@
        security config allows cleartext only to 127.0.0.1 and trusts no CA; the
        page CSP allows connections only to 127.0.0.1; the core has no network code;
        scripts/check-network.sh verifies on the phone that no traffic leaves;
-     - allowBackup=false and data extraction rules: no cloud or device-transfer backup. -->
+     - allowBackup=false and data extraction rules: no cloud or device-transfer backup;
+     - invitations (tappa 4): POST_NOTIFICATIONS (asked when the user turns them on),
+       RECEIVE_BOOT_COMPLETED (re-arm after a reboot); inexact alarms, so no
+       SCHEDULE_EXACT_ALARM. singleTask: a notification reopens the running app. -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <application android:hasCode="true" android:icon="@mipmap/ic_launcher"
         android:extractNativeLibs="true"
         android:allowNativeHeapPointerTagging="false"
@@ -25,6 +30,7 @@
         <meta-data android:name="android.webkit.WebView.MetricsOptOut" android:value="true" />
 
         <activity android:configChanges="orientation|screenLayout|screenSize|keyboardHidden" android:exported="true"
+            android:launchMode="singleTask"
             android:label="@string/app_name" android:name="dev.dioxus.main.MainActivity">
             <meta-data android:name="android.app.lib_name" android:value="main" />
             <meta-data android:name="android.app.func_name" android:value="ANativeActivity_onCreate" />
@@ -33,5 +39,15 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <receiver android:name="org.kuracare.app.InviteReceiver" android:exported="false" />
+        <receiver android:name="org.kuracare.app.RestartReceiver" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+            </intent-filter>
+        </receiver>
     </application>
 </manifest>

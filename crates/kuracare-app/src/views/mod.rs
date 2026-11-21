@@ -6,5 +6,6 @@ pub mod lists;
 pub mod meal;
 pub mod onboarding;
 pub mod parts;
+pub mod settings;
 pub mod thought;
 pub mod unlock;

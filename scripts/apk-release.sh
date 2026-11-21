@@ -30,8 +30,10 @@ OUT="$ROOT/target/kuracare-$VERSION.apk"
 echo "==> Rust (release) e progetto Android"
 (cd "$APP" && dx build --platform android --release --target aarch64-linux-android)
 
-echo "==> Manifest, configurazione di rete, icone, regole di backup"
+echo "==> Manifest, configurazione di rete, icone, regole di backup, codice degli inviti"
 cp "$APP/android/AndroidManifest.xml" "$GEN/app/src/main/AndroidManifest.xml"
+cp -r "$APP/android/kotlin/." "$GEN/app/src/main/kotlin/"
+cp "$APP/android/kuracare-rules.pro" "$GEN/app/kuracare-rules.pro"
 rm -rf "$GEN"/app/src/main/res/mipmap-* "$GEN"/app/src/main/res/drawable*/ic_launcher_*
 cp -r "$APP/android/res/." "$GEN/app/src/main/res/"
 
@@ -47,8 +49,9 @@ rm -f "$OUT.aligned" "$OUT.idsig"
 "$BT/apksigner" verify "$OUT"
 
 echo "==> Controlli"
-PERMS=$("$BT/aapt2" dump permissions "$OUT" | sed -n "s/^uses-permission: name='\(.*\)'/\1/p" | grep -v '^org.kuracare.app\.' || true)
-if [ "$PERMS" != "android.permission.INTERNET" ]; then
+PERMS=$("$BT/aapt2" dump permissions "$OUT" | sed -n "s/^uses-permission: name='\(.*\)'/\1/p" | grep -v '^org.kuracare.app\.' | sort | tr '\n' ' ' || true)
+EXPECTED="android.permission.INTERNET android.permission.POST_NOTIFICATIONS android.permission.RECEIVE_BOOT_COMPLETED "
+if [ "$PERMS" != "$EXPECTED" ]; then
   echo "ERRORE: permessi inattesi: $PERMS" >&2; exit 1
 fi
 MANIFEST=$("$BT/aapt2" dump xmltree --file AndroidManifest.xml "$OUT")

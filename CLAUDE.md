@@ -85,7 +85,18 @@ La PWA Svelte (tappe 2-3) è conservata nel tag git `pwa-final`, solo come rifer
 - **Foto dei pasti: sospese** (21/11, scelta di Luigi). La fotocamera via `<input capture>` non ha
   funzionato nell'APK di rilascio; wry lascerebbe la foto originale in chiaro nella memoria
   esterna dell'app (`platform::clear_capture_dir` la svuota a ogni avvio). `photo::shrink` resta.
-- Promemoria (tappa 4): notifiche locali native con `AlarmManager` via JNI. Niente server.
+- **Inviti (tappa 4, verificata sul Pixel il 21/11)**: `kuracare-core/src/reminders.rs` calcola il
+  piano dei prossimi 14 giorni (un invito per finestra in un momento casuale ma stabile, dal sale
+  `invite_salt`; niente inviti a finestra già con check-in, in pausa, o finita; cose da fare con
+  orario). Il piano contiene solo istanti, chiavi e testi generici, mai titoli: Kotlin
+  (`crates/kuracare-app/android/kotlin/`, `Bridge.kt`) lo tiene in chiaro nelle preferenze private
+  perché funzioni ad app bloccata e dopo il riavvio. Rust → Kotlin via JNI (`src/notify.rs`,
+  regole R8 in `android/kuracare-rules.pro`). Una sveglia alla volta con `setWindow` da 10 minuti
+  (misurato: `setAndAllowWhileIdle` dava +1 ora). Controllo: `adb shell dumpsys alarm | grep -A2 kuracare`.
+  Toccare un invito apre il check-in con origine `prompted`. Permessi: INTERNET, POST_NOTIFICATIONS,
+  RECEIVE_BOOT_COMPLETED (lo script di firma verifica che siano esattamente questi).
+- Cose da fare: tipo `task` (titolo solo locale; sforzo 1-5, scadenza, stato da fare/fatta/lasciata
+  andare). Niente rosso né "in ritardo".
 - Grafici (tappa 5): SVG disegnati a mano, calcoli nel nucleo con test.
 - Questionari: GAD-7 e PHQ-8 con testi **segnaposto**; i testi ufficiali li fornisce Luigi.
   Mai PHQ-9 (item sul suicidio: serve un protocollo con comitato etico).
@@ -95,6 +106,8 @@ La PWA Svelte (tappe 2-3) è conservata nel tag git `pwa-final`, solo come rifer
 - Telefono: Pixel 8 Pro (Android 17). Licenza AGPL-3.0-only.
 - 21/11: riscrittura completa in Rust con Dioxus (scelta di Luigi), APK. Ordine: R1 nucleo,
   R2 interfaccia, R3 APK firmato; poi tappa 4 (promemoria nativi) e 5 (riepilogo e grafici).
+- 21/11: inviti in un momento casuale della finestra; inviti delle cose da fare con testo generico.
+  Niente file `.ics` (superfluo con le notifiche native).
 - Casa: stanze Bagno, Cucina, Camera da letto (modificabili), un tocco + dettagli facoltativi.
 - Repository pubblico su GitHub, CI con GitHub Actions. Finestre dei check-in scelte al primo avvio.
 - Preset cannabis (tappa 3), percentuali THC/CBD da etichetta, non inventate:
@@ -107,6 +120,8 @@ La PWA Svelte (tappe 2-3) è conservata nel tag git `pwa-final`, solo come rifer
 - App su PC: `cargo run -p kuracare-app --features desktop`
 - APK di rilascio: `scripts/apk-release.sh` → `target/kuracare-<versione>.apk`, poi
   `adb install -r` (stessa firma: i dati restano). Icone: `scripts/make-android-icons.sh`.
+- Un APK debug (`dx build` senza lo script) non contiene il codice Kotlin degli inviti: l'app
+  funziona, gli inviti no.
 - APK debug (firma diversa: per installarlo va disinstallato quello firmato, e si perdono i dati):
   `dx build --platform android` con `GRADLE_USER_HOME=~/.cache/kuracare-gradle`.
 - Build pesanti con `systemd-run --user --scope -p MemoryMax=5G` (PC con 7 GB di RAM)

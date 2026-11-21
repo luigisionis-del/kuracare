@@ -1,8 +1,8 @@
 //! Italian wording. The check-in labels and anchors are PROVISIONAL (core-v0.1):
 //! they will be replaced by items chosen from the ESM Item Repository (https://osf.io/kg376).
 
-use kuracare_core::Event;
 use kuracare_core::kinds::{CheckinItem, MealType, Payload, Route};
+use kuracare_core::{Event, time};
 
 pub fn checkin_label(i: CheckinItem) -> (&'static str, &'static str, &'static str) {
     match i {
@@ -97,6 +97,7 @@ pub fn describe(e: &Event) -> String {
                 .unwrap_or_default(),
         ]),
         Payload::Supplement(s) => join(&[s.name.clone(), amount(s.amount, &s.unit)]),
+        Payload::Task(t) => t.title.clone(),
         Payload::Meal(m) => join(&[
             meal_label(m.meal_type).into(),
             m.description.clone().unwrap_or_else(|| {
@@ -155,6 +156,34 @@ pub fn short_date(z: &jiff::ZonedDateTime) -> String {
     format!("{wd} {}", z.day())
 }
 
+/// "YYYY-MM-DD" -> "martedì 25 novembre" (as given if not a date).
+pub fn day_label(day: &str) -> String {
+    match day.parse::<jiff::civil::Date>() {
+        Ok(d) => format!(
+            "{} {} {}",
+            WEEKDAYS[d.weekday().to_monday_zero_offset() as usize],
+            d.day(),
+            MONTHS[(d.month() - 1) as usize]
+        ),
+        Err(_) => day.to_owned(),
+    }
+}
+
+/// A pause that ends in this year or later means "until I remove it".
+pub const OPEN_PAUSE_YEAR: i16 = 2100;
+
+/// "fino a martedì 25 novembre alle 09:00", or "finché non la togli".
+pub fn pause_label(until: Option<&str>) -> String {
+    let Some(z) = until.and_then(|u| time::local(u).ok()) else {
+        return String::new();
+    };
+    if z.year() >= OPEN_PAUSE_YEAR {
+        return "finché non la togli".into();
+    }
+    let day = z.strftime("%Y-%m-%d").to_string();
+    format!("fino a {} alle {}", day_label(&day), z.strftime("%H:%M"))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -203,5 +232,13 @@ mod tests {
         assert_eq!(long_date(&z), "sabato 21 novembre");
         assert_eq!(greeting(9), "Buongiorno");
         assert_eq!(greeting(20), "Buonasera");
+        assert_eq!(day_label("2026-11-25"), "mercoledì 25 novembre");
+        assert_eq!(
+            pause_label(Some("2100-01-01T00:00:00.000+01:00")),
+            "finché non la togli"
+        );
+        assert!(
+            pause_label(Some("2026-11-24T09:00:00.000+01:00")).starts_with("fino a martedì 24")
+        );
     }
 }
