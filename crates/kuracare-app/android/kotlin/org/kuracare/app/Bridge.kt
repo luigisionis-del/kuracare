@@ -13,12 +13,14 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.os.Build
+import android.provider.OpenableColumns
 import android.provider.Settings
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.view.WindowCompat
 import org.json.JSONObject
+import java.io.File
 
 /**
  * Invitations ("Ti va di…?").
@@ -150,6 +152,111 @@ object Bridge {
                 isAppearanceLightNavigationBars = !dark
             }
         }
+    }
+
+    // ---- files: export and backup out, backup in (Storage Access Framework) ----
+    // The user picks where; the app gets no storage permission.
+
+    private const val REQ_SAVE = 51
+    private const val REQ_OPEN = 52
+    private const val MAX_IMPORT = 64L * 1024 * 1024
+
+    @Volatile
+    private var docResult: String? = null
+    @Volatile
+    private var pendingSave: String? = null
+
+    /** Asks where to save the file at `path` (app cache); it is deleted afterwards. */
+    @JvmStatic
+    fun saveDocument(ctx: Context, path: String, mime: String, name: String) {
+        val a = ctx as? Activity ?: return
+        pendingSave = path
+        docResult = null
+        a.runOnUiThread {
+            val i = Intent(Intent.ACTION_CREATE_DOCUMENT)
+                .addCategory(Intent.CATEGORY_OPENABLE)
+                .setType(mime)
+                .putExtra(Intent.EXTRA_TITLE, name)
+            @Suppress("DEPRECATION")
+            a.startActivityForResult(i, REQ_SAVE)
+        }
+    }
+
+    /** Asks for a file to read (a backup); it is copied into the app cache. */
+    @JvmStatic
+    fun openDocument(ctx: Context) {
+        val a = ctx as? Activity ?: return
+        docResult = null
+        a.runOnUiThread {
+            val i = Intent(Intent.ACTION_OPEN_DOCUMENT)
+                .addCategory(Intent.CATEGORY_OPENABLE)
+                .setType("*/*")
+            @Suppress("DEPRECATION")
+            a.startActivityForResult(i, REQ_OPEN)
+        }
+    }
+
+    /** "saved|name", "opened|path", "cancel|" or "error|why", once; null while waiting. */
+    @JvmStatic
+    fun takeDocResult(): String? {
+        val r = docResult
+        docResult = null
+        return r
+    }
+
+    private fun displayName(ctx: Context, uri: android.net.Uri): String =
+        try {
+            ctx.contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use {
+                if (it.moveToFirst()) it.getString(0) else null
+            } ?: "file"
+        } catch (_: Exception) {
+            "file"
+        }
+
+    fun onDocResult(a: Activity, req: Int, res: Int, data: Intent?): Boolean {
+        if (req != REQ_SAVE && req != REQ_OPEN) return false
+        val uri = data?.data
+        if (res != Activity.RESULT_OK || uri == null) {
+            pendingSave?.let { File(it).delete() }
+            pendingSave = null
+            docResult = "cancel|"
+            return true
+        }
+        val ctx = a.applicationContext
+        Thread {
+            docResult = try {
+                if (req == REQ_SAVE) {
+                    val src = File(pendingSave ?: error("nothing to save"))
+                    ctx.contentResolver.openOutputStream(uri, "wt")!!.use { out ->
+                        src.inputStream().use { it.copyTo(out) }
+                    }
+                    src.delete()
+                    "saved|" + displayName(ctx, uri)
+                } else {
+                    val dst = File(ctx.cacheDir, "import.kuracare")
+                    ctx.contentResolver.openInputStream(uri)!!.use { inp ->
+                        dst.outputStream().use { out ->
+                            val buf = ByteArray(64 * 1024)
+                            var total = 0L
+                            while (true) {
+                                val n = inp.read(buf)
+                                if (n < 0) break
+                                total += n
+                                if (total > MAX_IMPORT) error("too large")
+                                out.write(buf, 0, n)
+                            }
+                        }
+                    }
+                    "opened|" + dst.absolutePath
+                }
+            } catch (e: Exception) {
+                pendingSave?.let { File(it).delete() }
+                "error|" + e.javaClass.simpleName
+            } finally {
+                pendingSave = null
+            }
+        }.start()
+        return true
     }
 
     /** "kind|key" of the invitation that opened the app, once; null otherwise. */

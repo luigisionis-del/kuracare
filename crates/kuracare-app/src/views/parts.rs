@@ -16,6 +16,7 @@ pub fn kind_icon(p: &Payload) -> &'static str {
         Payload::Cannabis(_) | Payload::Supplement(_) => "leaf",
         Payload::Meal(_) => "meal",
         Payload::Task(_) => "tasks",
+        Payload::DataRelease(_) => "lock",
     }
 }
 

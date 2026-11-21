@@ -32,6 +32,7 @@ pub enum View {
     Settings,
     Summary,
     Questionnaire(String),
+    Data,
 }
 
 #[derive(Clone, Debug, PartialEq)]

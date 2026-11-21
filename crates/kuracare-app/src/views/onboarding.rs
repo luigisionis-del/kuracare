@@ -18,6 +18,7 @@ pub fn Onboarding() -> Element {
     let mut windows = use_signal(Vec::<TimeWindow>::new);
     let mut busy = use_signal(|| false);
     let mut visible = use_signal(|| false);
+    let mut restoring = use_signal(|| false);
     let mut error = use_signal(|| None::<String>);
 
     let len = pass.read().chars().count();
@@ -53,6 +54,10 @@ pub fn Onboarding() -> Element {
         });
     };
 
+    if restoring() {
+        return rsx! { crate::views::restore::Restore { onback: move |_| restoring.set(false) } };
+    }
+
     rsx! {
         div { class: "dots", aria_hidden: "true",
             for i in 0..STEPS {
@@ -72,6 +77,7 @@ pub fn Onboarding() -> Element {
                     }
                     div { class: "actions",
                         button { class: "primary", onclick: move |_| step.set(1), "Avanti" }
+                        button { class: "quiet", onclick: move |_| restoring.set(true), "Ho un backup da ripristinare" }
                     }
                 }
             },

@@ -2496,6 +2496,7 @@ dependencies = [
  "aes-gcm",
  "aes-kw",
  "argon2",
+ "base64 0.23.1",
  "jiff",
  "rand 0.10.4",
  "rusqlite",

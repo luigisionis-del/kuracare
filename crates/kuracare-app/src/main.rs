@@ -37,7 +37,10 @@ fn main() {
 #[component]
 fn App() -> Element {
     let app = use_context_provider(AppState::new);
-    use_hook(platform::clear_capture_dir);
+    use_hook(|| {
+        platform::clear_capture_dir();
+        platform::clear_exchange_files();
+    });
 
     // Theme: applied now, whenever it changes, and again every minute so that
     // "Le stagioni" turns on the 1st of the month without a restart.
@@ -107,6 +110,7 @@ fn App() -> Element {
                         View::Lists => rsx! { views::lists::Lists {} },
                         View::Settings => rsx! { views::settings::Settings {} },
                         View::Summary => rsx! { views::summary::Summary {} },
+                        View::Data => rsx! { views::data::Data {} },
                         View::Questionnaire(id) => rsx! { views::questionnaire::Questionnaire { key: "{id}", id: id.clone() } },
                     }
                     ToastBar {}

@@ -27,6 +27,41 @@ impl Tapped {
     }
 }
 
+/// Result of the system file picker.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum Doc {
+    /// Saved under this display name.
+    Saved(String),
+    /// A file was picked and copied to this path (app cache).
+    Opened(String),
+    Cancelled,
+    Failed(String),
+}
+
+impl Doc {
+    #[cfg_attr(not(target_os = "android"), allow(dead_code))]
+    fn parse(s: &str) -> Option<Self> {
+        let (k, v) = s.split_once('|')?;
+        Some(match k {
+            "saved" => Self::Saved(v.into()),
+            "opened" => Self::Opened(v.into()),
+            "cancel" => Self::Cancelled,
+            _ => Self::Failed(v.into()),
+        })
+    }
+}
+
+/// Waits for the picker's answer (keeping the idle lock away meanwhile).
+pub async fn wait_doc() -> Doc {
+    loop {
+        tokio::time::sleep(std::time::Duration::from_millis(300)).await;
+        crate::state::touch();
+        if let Some(d) = take_doc() {
+            return d;
+        }
+    }
+}
+
 pub use imp::*;
 
 #[cfg(target_os = "android")]
@@ -151,6 +186,46 @@ mod imp {
         true
     }
 
+    /// Lets the user choose where to save `path`; the file is deleted afterwards.
+    pub fn save_document(path: &str, mime: &str, name: &str) {
+        with_bridge(|env, ctx, class| {
+            let p = env.new_string(path)?;
+            let m = env.new_string(mime)?;
+            let n = env.new_string(name)?;
+            env.call_static_method(
+                class,
+                "saveDocument",
+                format!("({CTX}Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V"),
+                &[
+                    JValue::Object(ctx),
+                    JValue::Object(&p),
+                    JValue::Object(&m),
+                    JValue::Object(&n),
+                ],
+            )?;
+            Ok(())
+        });
+    }
+
+    /// Lets the user pick a file to read; it is copied into the app cache.
+    pub fn open_document() {
+        call_with_context("openDocument");
+    }
+
+    pub fn take_doc() -> Option<super::Doc> {
+        with_bridge(|env, _ctx, class| {
+            let v = env
+                .call_static_method(class, "takeDocResult", "()Ljava/lang/String;", &[])?
+                .l()?;
+            if v.is_null() {
+                return Ok(None);
+            }
+            let s: String = env.get_string(&JString::from(v))?.into();
+            Ok(super::Doc::parse(&s))
+        })
+        .flatten()
+    }
+
     /// Colours of the status and navigation bars (ARGB); mode 0 auto, 1 light, 2 dark.
     pub fn set_bars(day: i32, night: i32, mode: i32) {
         with_bridge(|env, ctx, class| {
@@ -188,6 +263,35 @@ mod imp {
         false
     }
     pub fn set_bars(_day: i32, _night: i32, _mode: i32) {}
+
+    use std::sync::Mutex;
+    static DOC: Mutex<Option<super::Doc>> = Mutex::new(None);
+
+    /// Desktop: files go to `<data dir>/exports/`.
+    pub fn save_document(path: &str, _mime: &str, name: &str) {
+        let dir = crate::platform::data_dir().join("exports");
+        let res = std::fs::create_dir_all(&dir)
+            .and_then(|_| std::fs::copy(path, dir.join(name)))
+            .and_then(|_| std::fs::remove_file(path));
+        *DOC.lock().unwrap() = Some(match res {
+            Ok(()) => super::Doc::Saved(name.into()),
+            Err(e) => super::Doc::Failed(e.to_string()),
+        });
+    }
+
+    /// Desktop: reads `<data dir>/import.kuracare` if present.
+    pub fn open_document() {
+        let p = crate::platform::data_dir().join("import.kuracare");
+        *DOC.lock().unwrap() = Some(if p.exists() {
+            super::Doc::Opened(p.to_string_lossy().into_owned())
+        } else {
+            super::Doc::Cancelled
+        });
+    }
+
+    pub fn take_doc() -> Option<super::Doc> {
+        DOC.lock().unwrap().take()
+    }
 }
 
 #[cfg(test)]

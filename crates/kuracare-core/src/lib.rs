@@ -3,6 +3,7 @@
 //! No networking, no UI. Everything personal is sealed with AES-256-GCM
 //! under a key wrapped by an Argon2id-derived key (see `crypto`).
 
+pub mod backup;
 pub mod crypto;
 pub mod enrich;
 pub mod error;

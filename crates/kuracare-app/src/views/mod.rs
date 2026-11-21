@@ -1,4 +1,5 @@
 pub mod checkin;
+pub mod data;
 pub mod edit;
 pub mod enrich;
 pub mod home;
@@ -7,6 +8,7 @@ pub mod meal;
 pub mod onboarding;
 pub mod parts;
 pub mod questionnaire;
+pub mod restore;
 pub mod settings;
 pub mod summary;
 pub mod thought;

@@ -62,6 +62,24 @@ fn fulfilment(f: Option<u8>) -> String {
     f.map(|f| format!("appagamento {f}")).unwrap_or_default()
 }
 
+/// Italian name of a kind, for the export preview.
+pub fn kind_label(kind: &str) -> &'static str {
+    match kind {
+        "checkin" => "Check-in",
+        "thought" => "Pensieri che tornano",
+        "care" => "Gesti di cura",
+        "home" => "Cura della casa",
+        "reflection" => "Riflessioni serali",
+        "cannabis" => "Assunzioni di cannabis",
+        "supplement" => "Integratori",
+        "meal" => "Pasti",
+        "task" => "Cose da fare",
+        "questionnaire" => "Questionari",
+        "dataRelease" => "Invii di dati",
+        _ => "Altro",
+    }
+}
+
 /// One short line describing an event, for lists.
 pub fn describe(e: &Event) -> String {
     match &e.payload {
@@ -99,6 +117,15 @@ pub fn describe(e: &Event) -> String {
         Payload::Supplement(s) => join(&[s.name.clone(), amount(s.amount, &s.unit)]),
         Payload::Task(t) => t.title.clone(),
         Payload::Questionnaire(q) => format!("Questionario {}", q.instrument.to_uppercase()),
+        Payload::DataRelease(r) => format!(
+            "Invio dati: {} ({})",
+            if r.scope == "backup" {
+                "backup cifrato"
+            } else {
+                "per la ricerca"
+            },
+            r.format.to_uppercase()
+        ),
         Payload::Meal(m) => join(&[
             meal_label(m.meal_type).into(),
             m.description.clone().unwrap_or_else(|| {

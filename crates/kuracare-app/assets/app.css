@@ -318,3 +318,10 @@ section.unlock .emblem { width: 88px; height: 88px; margin: var(--s8) 0 var(--s4
 button.eye { width: var(--tap); padding: 0; display: grid; place-items: center; }
 button.eye[aria-pressed='true'] { background: var(--accent-soft); }
 .week-title p { margin: 0; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+/* ---------- I tuoi dati ---------- */
+ul.preview { display: grid; gap: var(--s2); margin-bottom: var(--s3); }
+ul.preview li { font-size: 0.93rem; overflow-wrap: anywhere; }
+.entry.static { cursor: default; flex-wrap: wrap; }
+.entry.static > span:last-child { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.danger-zone h2 { color: var(--danger); }

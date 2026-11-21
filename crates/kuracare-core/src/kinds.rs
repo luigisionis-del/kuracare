@@ -231,6 +231,33 @@ pub struct Questionnaire {
     pub score: Option<u32>,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum Consent {
+    Given,
+    Revoked,
+}
+
+/// "Invio dati": every time data leaves the device, by an explicit action.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DataRelease {
+    /// "research" (allow-listed fields only) or "backup" (encrypted copy).
+    pub scope: String,
+    /// "json", "csv" or "kuracare-backup".
+    pub format: String,
+    /// Local days covered, "YYYY-MM-DD" (None = from the beginning / until now).
+    pub from: Option<String>,
+    pub to: Option<String>,
+    /// Kinds included.
+    pub kinds: Vec<String>,
+    /// How many records left.
+    pub records: u32,
+    /// Where: the file name chosen, or a recipient. Device only.
+    pub destination: String,
+    pub consent: Consent,
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub enum Payload {
     Checkin(Checkin),
@@ -243,10 +270,11 @@ pub enum Payload {
     Meal(Meal),
     Task(Task),
     Questionnaire(Questionnaire),
+    DataRelease(DataRelease),
 }
 
 /// Every kind with its current schema version.
-pub const KINDS: [(&str, u32); 10] = [
+pub const KINDS: [(&str, u32); 11] = [
     ("checkin", 1),
     ("thought", 1),
     ("care", 1),
@@ -257,6 +285,7 @@ pub const KINDS: [(&str, u32); 10] = [
     ("meal", 1),
     ("task", 1),
     ("questionnaire", 1),
+    ("dataRelease", 1),
 ];
 
 /// Allow-list for research exports. Never free text, photos or preset ids.
@@ -271,6 +300,9 @@ pub fn research_fields(kind: &str) -> &'static [&'static str] {
         "meal" => &["mealType"],
         "task" => &["dueDate", "dueTime", "effort", "status", "closedAt"],
         "questionnaire" => &["instrument", "version", "answers", "score"],
+        "dataRelease" => &[
+            "scope", "format", "from", "to", "kinds", "records", "consent",
+        ],
         _ => &[],
     }
 }
@@ -288,6 +320,7 @@ impl Payload {
             Self::Meal(_) => "meal",
             Self::Task(_) => "task",
             Self::Questionnaire(_) => "questionnaire",
+            Self::DataRelease(_) => "dataRelease",
         }
     }
 
@@ -307,6 +340,7 @@ impl Payload {
             Self::Meal(p) => serde_json::to_value(p)?,
             Self::Task(p) => serde_json::to_value(p)?,
             Self::Questionnaire(p) => serde_json::to_value(p)?,
+            Self::DataRelease(p) => serde_json::to_value(p)?,
         })
     }
 
@@ -322,6 +356,7 @@ impl Payload {
             "meal" => Self::Meal(serde_json::from_value(v)?),
             "task" => Self::Task(serde_json::from_value(v)?),
             "questionnaire" => Self::Questionnaire(serde_json::from_value(v)?),
+            "dataRelease" => Self::DataRelease(serde_json::from_value(v)?),
             other => return Err(Error::Unsupported(format!("event kind {other}"))),
         })
     }
@@ -446,6 +481,16 @@ mod tests {
                 version: "gad7@placeholder-0".into(),
                 answers: vec![Some(1), None],
                 score: None,
+            }),
+            Payload::DataRelease(DataRelease {
+                scope: "research".into(),
+                format: "csv".into(),
+                from: None,
+                to: Some("2026-11-22".into()),
+                kinds: vec!["checkin".into()],
+                records: 12,
+                destination: "kuracare.csv".into(),
+                consent: Consent::Given,
             }),
         ];
         assert_eq!(samples.len(), KINDS.len());

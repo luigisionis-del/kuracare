@@ -83,7 +83,7 @@ pub fn Edit(id: String) -> Element {
 
     let save = move |_| {
         let mut e: Event = draft.read().clone();
-        let is_task = matches!(e.payload, Payload::Task(_));
+        let is_task = matches!(e.payload, Payload::Task(_) | Payload::DataRelease(_));
         if !is_task && let Some(ts) = time::from_local_input(&when.read()) {
             e.ts = ts;
         }
@@ -158,7 +158,7 @@ pub fn Edit(id: String) -> Element {
     rsx! {
         section { class: "fade",
             ScreenHead { title: describe(&d), icon: kind_icon(&d.payload) }
-            if !matches!(d.payload, Payload::Task(_)) {
+            if !matches!(d.payload, Payload::Task(_) | Payload::DataRelease(_)) {
                 label { r#for: "when", "Quando" }
                 input { id: "when", r#type: "datetime-local", value: "{when}", oninput: move |e| when.set(e.value()) }
             }
@@ -347,6 +347,9 @@ pub fn Edit(id: String) -> Element {
                     if t.status == TaskStatus::LetGo {
                         p { class: "hint", "Lasciar andare una cosa è una scelta, non un fallimento." }
                     }
+                },
+                Payload::DataRelease(r) => rsx! {
+                    p { class: "hint", "È la traccia di un'uscita di dati: {r.records} registrazioni verso «{r.destination}». Resta com'è." }
                 },
                 Payload::Questionnaire(_) => rsx! {
                     p { class: "hint", "Le risposte del questionario restano com'erano in quel momento: puoi cambiarne solo l'ora." }

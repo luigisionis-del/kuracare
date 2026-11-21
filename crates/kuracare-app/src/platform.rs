@@ -56,6 +56,32 @@ pub fn clear_capture_dir() {
     }
 }
 
+/// App-private cache: export files wait here for the picker, a picked backup
+/// is copied here. Emptied at every start.
+pub fn cache_dir() -> PathBuf {
+    #[cfg(target_os = "android")]
+    {
+        PathBuf::from("/data/data/org.kuracare.app/cache")
+    }
+    #[cfg(not(target_os = "android"))]
+    {
+        data_dir().join("cache")
+    }
+}
+
+/// Removes leftover export/import files (never anything else).
+pub fn clear_exchange_files() {
+    let Ok(entries) = std::fs::read_dir(cache_dir()) else {
+        return;
+    };
+    for entry in entries.flatten() {
+        let name = entry.file_name().to_string_lossy().into_owned();
+        if name.ends_with(".kuracare") || name.starts_with("kuracare-") {
+            let _ = std::fs::remove_file(entry.path());
+        }
+    }
+}
+
 pub fn db_path() -> PathBuf {
     data_dir().join("kuracare.db")
 }

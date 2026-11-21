@@ -244,6 +244,12 @@ pub fn Settings() -> Element {
                 button { class: "small", onclick: move |_| app.go(View::Lists), "Apri le tue liste" }
             }
 
+            div { class: "card group",
+                h2 { class: "first sec", Icon { name: "lock" } "I tuoi dati" }
+                p { class: "muted", "Backup cifrato, esportazione per la ricerca, cosa è uscito e quando, cancellazione totale." }
+                button { class: "small", onclick: move |_| app.go(View::Data), "Apri" }
+            }
+
             div { class: "actions",
                 button { class: "quiet", onclick: move |_| app.back(), "Torna alla Home" }
             }
