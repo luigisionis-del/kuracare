@@ -37,6 +37,39 @@ pub fn local(iso: &str) -> Result<ZonedDateTime> {
     Ok(parse(iso)?.to_zoned_datetime(TimeZone::system()))
 }
 
+/// "HH:MM" of `iso` in the device zone.
+pub fn hhmm(iso: &str) -> String {
+    local(iso)
+        .map(|z| z.strftime("%H:%M").to_string())
+        .unwrap_or_default()
+}
+
+/// Local calendar day "YYYY-MM-DD" of `iso` (device zone).
+pub fn local_day(iso: &str) -> String {
+    local(iso)
+        .map(|z| z.strftime("%Y-%m-%d").to_string())
+        .unwrap_or_default()
+}
+
+pub fn today() -> String {
+    now().strftime("%Y-%m-%d").to_string()
+}
+
+/// Value for `<input type="datetime-local">` (device zone).
+pub fn to_local_input(iso: &str) -> String {
+    local(iso)
+        .map(|z| z.strftime("%Y-%m-%dT%H:%M").to_string())
+        .unwrap_or_default()
+}
+
+/// `<input type="datetime-local">` value -> ISO with offset, or None if invalid.
+pub fn from_local_input(value: &str) -> Option<String> {
+    let dt: jiff::civil::DateTime = value.parse().ok()?;
+    dt.to_zoned_datetime(TimeZone::system())
+        .ok()
+        .map(|z| format(&z))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -48,6 +81,15 @@ mod tests {
         assert_eq!(s.len(), "2026-11-21T09:30:00.000+01:00".len(), "{s}");
         assert!(s[..4].chars().all(re));
         assert!(matches!(&s[23..24], "+" | "-"), "{s}");
+    }
+
+    #[test]
+    fn datetime_local_round_trip() {
+        let iso = from_local_input("2026-11-21T09:30").unwrap();
+        assert_eq!(to_local_input(&iso), "2026-11-21T09:30");
+        assert_eq!(hhmm(&iso), "09:30");
+        assert_eq!(local_day(&iso), "2026-11-21");
+        assert!(from_local_input("nonsense").is_none());
     }
 
     #[test]

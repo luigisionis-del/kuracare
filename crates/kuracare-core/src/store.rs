@@ -28,7 +28,8 @@ pub trait Store {
     fn list(&self, prefix: &str) -> Result<Vec<(String, Sealed)>>;
     /// Raw ids, for tests and diagnostics.
     fn ids(&self) -> Result<Vec<String>>;
-    /// Irreversible: removes everything, header included.
+    /// Irreversible: removes everything, header included. The store stays
+    /// usable (empty), so a new vault can be created right away.
     fn destroy(&self) -> Result<()>;
 }
 
@@ -41,17 +42,22 @@ pub struct SqliteStore {
 impl SqliteStore {
     pub fn open(path: impl AsRef<Path>) -> Result<Self> {
         let path = path.as_ref().to_path_buf();
-        let conn = Connection::open(&path)?;
+        let conn = Self::connect(&path)?;
+        Ok(Self {
+            path,
+            conn: Mutex::new(Some(conn)),
+        })
+    }
+
+    fn connect(path: &Path) -> Result<Connection> {
+        let conn = Connection::open(path)?;
         conn.execute_batch(
             "PRAGMA journal_mode = WAL;
              PRAGMA secure_delete = ON;
              CREATE TABLE IF NOT EXISTS vault (id INTEGER PRIMARY KEY CHECK (id = 1), json TEXT NOT NULL);
              CREATE TABLE IF NOT EXISTS records (id TEXT PRIMARY KEY, v INTEGER NOT NULL, iv BLOB NOT NULL, ct BLOB NOT NULL);",
         )?;
-        Ok(Self {
-            path,
-            conn: Mutex::new(Some(conn)),
-        })
+        Ok(conn)
     }
 
     fn with<T>(&self, f: impl FnOnce(&Connection) -> Result<T>) -> Result<T> {
@@ -149,6 +155,7 @@ impl Store for SqliteStore {
                 Err(e) => return Err(e.into()),
             }
         }
+        *guard = Some(Self::connect(&self.path)?);
         Ok(())
     }
 }

@@ -6,9 +6,12 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
+base64 = "0.23.1"
 dioxus = { version = "=0.7.9", default-features = false, features = ["launch", "lib", "logger"] }
+image = { version = "0.25.10", default-features = false, features = ["jpeg", "png"] }
+jiff = "1.0.1"
 kuracare-core = { version = "0.4.0", path = "../kuracare-core" }
-tokio = { version = "1.54.1", features = ["rt"] }
+tokio = { version = "1.54.1", features = ["rt", "time"] }
 
 [features]
 default = []

@@ -229,14 +229,22 @@ mod tests {
     }
 
     #[test]
-    fn destroy_removes_the_files() {
+    fn destroy_wipes_everything_and_allows_a_fresh_start() {
         let dir = tempfile::tempdir().unwrap();
         let path = dir.path().join("kuracare.db");
         let v = Vault::with_kdf(SqliteStore::open(&path).unwrap(), crypto::fast_kdf());
         v.create("una frase lunga e mia").unwrap();
         v.put("evt:1", &1).unwrap();
+        let old_ct = v.store().get("evt:1").unwrap().unwrap().ct;
         v.destroy().unwrap();
-        assert!(!path.exists());
-        assert!(!dir.path().join("kuracare.db-wal").exists());
+        assert!(!v.exists().unwrap());
+        assert!(!v.is_unlocked());
+        assert!(v.store().ids().unwrap().is_empty());
+        let bytes = std::fs::read(&path).unwrap();
+        assert!(!bytes.windows(old_ct.len()).any(|w| w == old_ct.as_slice()));
+        // A new vault can be created immediately, with a new passphrase.
+        v.create("una nuova frase mia").unwrap();
+        v.put("evt:2", &2).unwrap();
+        assert_eq!(v.get::<i32>("evt:2").unwrap(), Some(2));
     }
 }
