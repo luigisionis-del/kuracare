@@ -47,46 +47,47 @@ uso di ricerca (EMA) con dati standardizzati e versionati.
 - Linguaggio caldo e semplice, mai clinico né da sorveglianza; forme neutre rispetto al genere
   ("Ti do il benvenuto", non "Benvenuto").
 
-## Architettura
+## Architettura (dalla R1, 21/11/2026: tutto in Rust)
 
-- Svelte 5 + Vite + TypeScript, una sola app (niente SvelteKit). PWA con vite-plugin-pwa.
-- `src/core/crypto`: Argon2id (hash-wasm, WASM) → KEK; DEK AES-GCM-256 casuale, avvolta con
-  AES-KW. In memoria la DEK è non estraibile. AAD = id del record (i record non si scambiano).
-- `src/core/store`: Dexie/IndexedDB. In chiaro solo `id` del record e intestazione del vault
-  (parametri KDF + chiave avvolta). Tipi, orari e valori sono cifrati. Le ricerche si fanno in
-  memoria dopo lo sblocco.
-- `src/core/model`: ogni registrazione è un evento (`KuraEvent`): ts ISO 8601 con offset, fuso
-  IANA, kind, origin (`prompted`/`spontaneous`), `schemaVersion`, payload. I mancanti sono `null`.
+La PWA Svelte (tappe 2-3) è conservata nel tag git `pwa-final`, solo come riferimento.
+
+- Workspace Cargo: `crates/kuracare-core` (nucleo, nessuna interfaccia, **nessuna rete**: la CI
+  lo verifica) e `crates/kuracare-app` (Dioxus 0.7.9, APK Android per il Pixel).
+- `crypto`: Argon2id (passphrase normalizzata NFC) → KEK; DEK casuale AES-256-GCM, avvolta con
+  AES-KW. Chiavi in `Zeroizing`: al blocco vengono cancellate dalla memoria. AAD = id del record.
+- `store`: SQLite (`rusqlite` bundled, `secure_delete`) nella cartella privata dell'app. In chiaro
+  solo l'id dei record e l'intestazione del vault. `MemStore` per i test.
+- `event`: `RawEvent` (forma salvata, payload JSON) ↔ `Event` (tipizzato). ts ISO 8601 con offset
+  (`jiff`), fuso IANA, origin `prompted`/`spontaneous`, `schemaVersion`, mancanti = null.
+  Stessa forma JSON della PWA (c'è un test).
 - **Due versioni distinte**: `schemaVersion` (forma del payload, migrata in lettura da
-  `src/core/migrations`, mai riscrivendo lo storico) e versione dello strumento (es. `core-v0.1`,
-  `gad7@…`) dentro il payload, mai migrata.
-- Promemoria (tappa 4): interfaccia `ReminderScheduler` sostituibile. Ora opzione A (in app +
-  `.ics`), poi C (Capacitor, notifiche locali). Niente Web Push (passerebbe da FCM/Apple).
+  `migrations`, mai riscrivendo lo storico) e versione dello strumento (es. `core-v0.1`) dentro
+  il payload, mai migrata.
+- `kinds`: checkin, thought, care, home (stanze), reflection, cannabis, supplement, meal.
+  `research_fields` = elenco dei campi ammessi; `export::research_view` costruisce per inclusione.
+- `enrich` ("Se ti va"): solo dettagli fattuali, mai risposte del check-in.
+- Dioxus su Android disegna dentro la WebView di sistema; `dioxus-desktop` include sempre il
+  codice di devtools (websocket): la garanzia "niente rete" dell'app è l'APK di rilascio **senza
+  permesso INTERNET**.
+- Promemoria (tappa 4): notifiche locali native con `AlarmManager` via JNI. Niente server.
+- Grafici (tappa 5): SVG disegnati a mano, calcoli nel nucleo con test.
 - Questionari: GAD-7 e PHQ-8 con testi **segnaposto**; i testi ufficiali li fornisce Luigi.
   Mai PHQ-9 (item sul suicidio: serve un protocollo con comitato etico).
 
 ## Decisioni prese (21/11/2026)
 
-- Telefono: Pixel 8 Pro (Android, Chrome). Promemoria: A ora, C dopo. Licenza AGPL-3.0-only.
-- Hosting: server nuovo dedicato con nginx (`deploy/nginx.conf`), dominio da definire.
-- Repository su GitHub, CI con GitHub Actions. Finestre dei check-in scelte al primo avvio.
+- Telefono: Pixel 8 Pro (Android 17). Licenza AGPL-3.0-only.
+- 21/11: riscrittura completa in Rust con Dioxus (scelta di Luigi), APK. Ordine: R1 nucleo,
+  R2 interfaccia, R3 APK firmato; poi tappa 4 (promemoria nativi) e 5 (riepilogo e grafici).
+- Casa: stanze Bagno, Cucina, Camera da letto (modificabili), un tocco + dettagli facoltativi.
+- Repository pubblico su GitHub, CI con GitHub Actions. Finestre dei check-in scelte al primo avvio.
 - Preset cannabis (tappa 3), percentuali THC/CBD da etichetta, non inventate:
   THC-dominanti dalla collaborazione Sherbinskis × Silent Seeds; CBD-dominanti di High Alpine
   (es. "Mandarine Flokies", "Lemon Cockies" — nomi da confermare con Luigi).
 
-## Tappa 3: registrazioni (21/11/2026)
-
-- Tipi di evento in `src/core/events/kinds.ts`, ciascuno con il suo elenco `research` di campi
-  ammessi all'esportazione per la ricerca (mai testo libero né foto: c'è un test).
-- Liste modificabili (varietà, integratori, gesti, pensieri) in `cfg:lists`, senza valori inventati.
-- "Se ti va": angolo che apre solo Luigi, per aggiungere dettagli *fattuali* agli ultimi 7 giorni
-  (max 5, "Va bene così" li toglie per sempre). Le risposte del check-in non si completano mai
-  a posteriori: sarebbero ricordi, non istantanee. Ogni modifica tiene `recordedAt` e segna `editedAt`.
-- Etichette e ancore di `core-v0.1` in `src/lib/labels.ts`: provvisorie.
-
 ## Comandi
 
-- `npm run dev` · `npm run build` · `npm run preview`
-- `npm test` (Vitest, unità) · `npm run e2e` (Playwright su build di produzione, viewport Pixel,
-  porta propria 4183: la 4173 è per il telefono via `adb reverse`)
-- `npm run check` (svelte-check)
+- `cargo test -p kuracare-core` · `cargo clippy --all-targets -- -D warnings` · `cargo fmt`
+- App su PC: `cargo run -p kuracare-app --features desktop`
+- App sul Pixel: `dx serve --platform android` (SDK/NDK in `~/.cache/fmis-android/sdk`)
+- Build pesanti con `systemd-run --user --scope -p MemoryMax=5G` (PC con 7 GB di RAM)

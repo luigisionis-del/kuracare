@@ -1,0 +1,7 @@
+[application]
+name = "Kuracare"
+
+[bundle]
+identifier = "org.kuracare.app"
+publisher = "Kuracare"
+icon = ["../../assets/icon-512.png"]

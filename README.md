@@ -7,64 +7,44 @@ domande brevi come stai, segna i gesti che ti fanno bene, le assunzioni (terapia
 integratori) e i pasti, e una volta a settimana ti mostra un riepilogo che comincia da ciò che ti
 ha fatto bene.
 
-> **Stato:** prototipo personale in costruzione (tappa 2 di 6: fondamenta). Per ora ci sono il
-> primo avvio, la passphrase, la cifratura e il blocco; le registrazioni arrivano con la tappa 3.
+> **Stato:** riscrittura in Rust in corso (R1: nucleo). La prima versione, una web app in Svelte,
+> è conservata nel tag `pwa-final`.
 
 ## Cosa fa
 
-- Tiene tutti i dati **solo sul dispositivo**, cifrati con una chiave che deriva dalla tua
-  passphrase (Argon2id + AES-GCM 256).
-- Si chiude da sola dopo qualche minuto di inattività e a ogni riapertura.
-- Funziona anche offline e si installa come un'app.
+- Tiene tutti i dati **solo sul telefono**, cifrati con una chiave che deriva dalla tua
+  passphrase (Argon2id + AES-256-GCM). Al blocco la chiave viene cancellata dalla memoria.
+- Registra con un tocco gesti di cura, la cura della casa (bagno, cucina, camera da letto),
+  assunzioni e pasti; un check-in breve e facoltativo; i pensieri che tornano.
+- Funziona senza connessione: la versione per il telefono non ha nemmeno il permesso di usare
+  internet.
 
 ## Cosa non fa
 
 - **Non dà consigli sanitari.** Non suggerisce dosi, varietà, integratori o terapie: registra e
   riassume. Per le decisioni sulla salute c'è chi ti segue.
-- Non ha account, non sincronizza, non manda dati a nessuno. Niente analytics, tracker, font o
-  script esterni. I dati escono solo se li esporti tu (tappa 6), e ogni esportazione viene annotata.
+- Non ha account, non sincronizza, non manda dati a nessuno. I dati escono solo se li esporti tu,
+  e ogni esportazione viene annotata.
 - Non usa punti, serie di giorni o badge, e non ti fa sentire in colpa per un giorno vuoto.
 
 ## La passphrase
 
 Se dimentichi la passphrase, **i dati non si possono recuperare** da nessuno. È ciò che li tiene
-al sicuro. Il backup cifrato (tappa 6) sarà la rete di sicurezza.
+al sicuro. Il backup cifrato sarà la rete di sicurezza.
 
-## Installarla sul telefono (Android, Chrome)
+## Struttura
 
-L'app funziona solo in un contesto sicuro: HTTPS oppure `localhost`.
-
-**Dal server (uso normale).** Apri l'indirizzo dell'app in Chrome, menu ⋮ → *Installa app*
-(oppure *Aggiungi a schermata Home*).
-
-**Dal PC, per provare, via USB** (serve il debug USB attivo sul telefono):
-
-```sh
-npm ci
-npm run build && npm run preview     # serve su http://localhost:4173
-adb reverse tcp:4173 tcp:4173        # il telefono vede la porta del PC come sua
-```
-
-Poi sul telefono apri `http://localhost:4173` in Chrome e installala dal menu.
-
-## Backup
-
-Arriva con la tappa 6: un file cifrato con la tua passphrase, da conservare dove vuoi.
-Fino ad allora i dati di prova possono andare persi (per esempio cancellando i dati di Chrome).
-
-## Ospitare l'app
-
-Sono solo file statici (`npm run build` → `dist/`). In `deploy/` c'è una configurazione nginx
-con la Content Security Policy e gli altri header di sicurezza, senza log degli accessi.
-Il server non vede mai i dati personali.
+- `crates/kuracare-core`: il nucleo in Rust (cifratura, archivio, modello dei dati, migrazioni,
+  esportazione per la ricerca). Nessuna interfaccia e nessuna libreria di rete.
+- `crates/kuracare-app`: l'app (Dioxus) per Android e, per lo sviluppo, per il PC.
+- `content/riconoscimenti.it.txt`: le frasi di riconoscimento, modificabili.
 
 ## Sviluppo
 
 ```sh
-npm run dev      # sviluppo (senza CSP: la CSP si applica alla build)
-npm run check    # controllo dei tipi
-npm test         # test unitari (Vitest)
-npm run e2e      # test end-to-end (Playwright) sulla build di produzione
+cargo test -p kuracare-core                    # test del nucleo
+cargo run -p kuracare-app --features desktop   # l'app sul PC
+dx build --platform android                    # l'APK (servono Android SDK, NDK e JDK 17)
 ```
 
 Le regole del progetto sono in [`CLAUDE.md`](CLAUDE.md).

@@ -1,0 +1,16 @@
+[package]
+name = "kuracare-app"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+dioxus = { version = "=0.7.9", default-features = false, features = ["launch", "lib", "logger"] }
+kuracare-core = { version = "0.4.0", path = "../kuracare-core" }
+tokio = { version = "1.54.1", features = ["rt"] }
+
+[features]
+default = []
+desktop = ["dioxus/desktop"]
+mobile = ["dioxus/mobile"]
