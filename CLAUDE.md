@@ -66,9 +66,25 @@ La PWA Svelte (tappe 2-3) è conservata nel tag git `pwa-final`, solo come rifer
 - `kinds`: checkin, thought, care, home (stanze), reflection, cannabis, supplement, meal.
   `research_fields` = elenco dei campi ammessi; `export::research_view` costruisce per inclusione.
 - `enrich` ("Se ti va"): solo dettagli fattuali, mai risposte del check-in.
-- Dioxus su Android disegna dentro la WebView di sistema; `dioxus-desktop` include sempre il
-  codice di devtools (websocket): la garanzia "niente rete" dell'app è l'APK di rilascio **senza
-  permesso INTERNET**.
+- **Rete (verificato il 21/11/2026 sul Pixel)**: Dioxus su Android parla con la WebView tramite un
+  websocket su 127.0.0.1, e Android vuole il permesso INTERNET anche per i socket locali: senza,
+  l'app resta bianca. Quindi l'APK ha INTERNET, con queste difese:
+  - nucleo senza librerie di rete (CI);
+  - CSP della pagina (`main.rs`, `CSP`): connessioni solo a 127.0.0.1;
+  - `network_security_config`: niente traffico in chiaro tranne 127.0.0.1, **nessuna CA
+    attendibile** (ogni connessione TLS fallisce);
+  - WebView con Safe Browsing e metriche spenti (meta-data nel manifest).
+  Fatto aperto: la WebView tenta comunque connessioni HTTPS verso server Google (172.217.x.x,
+  2001:4860:…), tutte rifiutate dalla regola sulle CA (nessun contenuto esce). Da identificare con
+  un net-log della WebView su build debug in emulatore. Controllo: `scripts/check-network.sh`
+  (contatori Android, cumulativi) e lettura di /proc/net/tcp* per l'UID dell'app.
+- **APK**: `scripts/apk-release.sh` (dx release + Gradle release + manifest e risorse di
+  `crates/kuracare-app/android/` + firma con la chiave in `~/.config/kuracare`, mai nel repo).
+  Non debuggabile, `allowBackup=false`, regole che escludono backup e trasferimento dati.
+  Argon2id 64 MiB: 199 ms sul Pixel in release.
+- **Foto dei pasti: sospese** (21/11, scelta di Luigi). La fotocamera via `<input capture>` non ha
+  funzionato nell'APK di rilascio; wry lascerebbe la foto originale in chiaro nella memoria
+  esterna dell'app (`platform::clear_capture_dir` la svuota a ogni avvio). `photo::shrink` resta.
 - Promemoria (tappa 4): notifiche locali native con `AlarmManager` via JNI. Niente server.
 - Grafici (tappa 5): SVG disegnati a mano, calcoli nel nucleo con test.
 - Questionari: GAD-7 e PHQ-8 con testi **segnaposto**; i testi ufficiali li fornisce Luigi.
@@ -89,5 +105,8 @@ La PWA Svelte (tappe 2-3) è conservata nel tag git `pwa-final`, solo come rifer
 
 - `cargo test -p kuracare-core` · `cargo clippy --all-targets -- -D warnings` · `cargo fmt`
 - App su PC: `cargo run -p kuracare-app --features desktop`
-- App sul Pixel: `dx serve --platform android` (SDK/NDK in `~/.cache/fmis-android/sdk`)
+- APK di rilascio: `scripts/apk-release.sh` → `target/kuracare-<versione>.apk`, poi
+  `adb install -r` (stessa firma: i dati restano). Icone: `scripts/make-android-icons.sh`.
+- APK debug (firma diversa: per installarlo va disinstallato quello firmato, e si perdono i dati):
+  `dx build --platform android` con `GRADLE_USER_HOME=~/.cache/kuracare-gradle`.
 - Build pesanti con `systemd-run --user --scope -p MemoryMax=5G` (PC con 7 GB di RAM)

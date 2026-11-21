@@ -9,6 +9,8 @@ use image::{DynamicImage, ImageDecoder, ImageReader};
 
 pub const MAX_SIDE: u32 = 1280;
 
+/// Taking photos is paused (21/11/2026); kept, with its test, for when it comes back.
+#[allow(dead_code)]
 pub fn shrink(bytes: &[u8]) -> Result<Vec<u8>, String> {
     let mut decoder = ImageReader::new(Cursor::new(bytes))
         .with_guessed_format()

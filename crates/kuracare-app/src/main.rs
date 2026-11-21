@@ -15,6 +15,19 @@ use views::parts::ToastBar;
 
 const CSS: &str = include_str!("../assets/app.css");
 
+/// Content Security Policy of the page inside the WebView. Dioxus talks to the
+/// page over a websocket on 127.0.0.1 (that is why the APK needs the INTERNET
+/// permission): every other destination is refused. 'unsafe-eval' and
+/// 'unsafe-inline' are required by the Dioxus interpreter and by `<style>`.
+const CSP: &str = "default-src 'self'; \
+    script-src 'self' 'unsafe-inline' 'unsafe-eval'; \
+    style-src 'self' 'unsafe-inline'; \
+    img-src 'self' data: blob:; \
+    font-src 'self'; \
+    connect-src 'self' ws://127.0.0.1:* http://127.0.0.1:*; \
+    media-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; \
+    form-action 'none'; base-uri 'none'";
+
 fn main() {
     dioxus::launch(App);
 }
@@ -22,6 +35,7 @@ fn main() {
 #[component]
 fn App() -> Element {
     let app = use_context_provider(AppState::new);
+    use_hook(platform::clear_capture_dir);
 
     // Idle lock: checked every 10 s, and on resume (the loop runs again then).
     use_future(move || async move {
@@ -50,6 +64,7 @@ fn App() -> Element {
     let phase = app.phase.read().clone();
     let view = app.view.read().clone();
     rsx! {
+        document::Meta { http_equiv: "Content-Security-Policy", content: CSP }
         style { {CSS} }
         main {
             onpointerdown: move |_| touch(),

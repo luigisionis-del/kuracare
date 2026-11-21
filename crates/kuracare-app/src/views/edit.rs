@@ -6,7 +6,6 @@ use crate::labels::{checkin_label, describe, meal_label, num, route_label};
 use crate::photo;
 use crate::platform::vault;
 use crate::state::use_app;
-use crate::views::meal::read_photo;
 use crate::views::parts::{Chip, Scale};
 
 const DURATIONS: [u32; 5] = [5, 10, 20, 30, 60];
@@ -49,7 +48,7 @@ pub fn Edit(id: String) -> Element {
     let mut thc = use_signal(|| t0);
     let mut cbd = use_signal(|| c0);
     let duration = use_signal(|| d0);
-    let mut photo_url = use_signal(|| match &original.payload {
+    let photo_url = use_signal(|| match &original.payload {
         Payload::Meal(m) => m
             .photo_id
             .as_deref()
@@ -104,24 +103,6 @@ pub fn Edit(id: String) -> Element {
     let remove = move |_| {
         app.forget(&draft.read());
         app.back();
-    };
-
-    let pick = move |e: FormEvent| {
-        spawn(async move {
-            match read_photo(&e).await {
-                Some(Ok(b)) => match repo::save_photo(&vault(), &b) {
-                    Ok(id) => {
-                        photo_url.set(Some(photo::data_url(&b)));
-                        if let Payload::Meal(m) = &mut draft.write().payload {
-                            m.photo_id = Some(id);
-                        }
-                    }
-                    Err(err) => app.error(err),
-                },
-                Some(Err(err)) => app.error(err),
-                None => {}
-            }
-        });
     };
 
     let d = draft.read().clone();
@@ -238,8 +219,7 @@ pub fn Edit(id: String) -> Element {
                         id: "md", r#type: "text", maxlength: "140", value: m.description.clone().unwrap_or_default(),
                         oninput: move |e| if let Payload::Meal(m) = &mut draft.write().payload { m.description = Some(e.value()) },
                     }
-                    label { r#for: "mp", "Foto " span { class: "muted", "(resta solo sul telefono)" } }
-                    input { id: "mp", class: "file", r#type: "file", accept: "image/*", capture: "environment", onchange: pick }
+                    // Photos taken before they were paused are still shown.
                     if let Some(url) = photo_url() { img { class: "photo", src: url, alt: "Foto del pasto" } }
                 },
                 Payload::Thought(t) => rsx! {

@@ -23,9 +23,15 @@ pub fn Unlock() -> Element {
         busy.set(true);
         error.set(None);
         spawn(async move {
+            let started = std::time::Instant::now();
             let res = tokio::task::spawn_blocking(move || vault().unlock(&p))
                 .await
                 .expect("worker thread");
+            // Visible in logcat (RustStdoutStderr): only the duration, nothing personal.
+            eprintln!(
+                "kuracare: key derivation took {} ms",
+                started.elapsed().as_millis()
+            );
             busy.set(false);
             pass.set(String::new());
             match res.and_then(|_| app.opened()) {

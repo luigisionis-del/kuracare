@@ -27,6 +27,35 @@ pub fn data_dir() -> PathBuf {
     }
 }
 
+/// Where wry stores the raw camera photo before handing it to the page
+/// (app-specific external storage, reachable over USB): emptied right after
+/// a photo is read and at every start, so no unencrypted copy stays around.
+pub fn capture_dir() -> Option<PathBuf> {
+    #[cfg(target_os = "android")]
+    {
+        Some(PathBuf::from(
+            "/storage/emulated/0/Android/data/org.kuracare.app/files/Pictures",
+        ))
+    }
+    #[cfg(not(target_os = "android"))]
+    {
+        None
+    }
+}
+
+pub fn clear_capture_dir() {
+    let Some(dir) = capture_dir() else { return };
+    let Ok(entries) = std::fs::read_dir(&dir) else {
+        return;
+    };
+    for entry in entries.flatten() {
+        let path = entry.path();
+        if path.is_file() {
+            let _ = std::fs::remove_file(&path);
+        }
+    }
+}
+
 pub fn db_path() -> PathBuf {
     data_dir().join("kuracare.db")
 }

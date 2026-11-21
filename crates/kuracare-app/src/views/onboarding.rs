@@ -76,7 +76,7 @@ pub fn Onboarding() -> Element {
                 section { class: "fade",
                     h1 { "Tutto resta qui" }
                     p { span { class: "badge-local", "Solo su questo telefono" } }
-                    p { "Quello che scrivi resta su questo telefono, cifrato. Niente account, niente cloud, nessuno che guarda. L'app non ha nemmeno il permesso di usare internet." }
+                    p { "Quello che scrivi resta su questo telefono, cifrato. Niente account, niente cloud, nessuno che guarda: Kuracare non si collega a internet." }
                     p { "I dati escono solo se lo decidi tu, con un'esportazione. Ogni volta Kuracare se lo annota, così sai sempre cosa è uscito e quando." }
                     div { class: "actions",
                         button { class: "primary", onclick: move |_| step.set(2), "Avanti" }

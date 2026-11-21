@@ -7,8 +7,8 @@ domande brevi come stai, segna i gesti che ti fanno bene, le assunzioni (terapia
 integratori) e i pasti, e una volta a settimana ti mostra un riepilogo che comincia da ciò che ti
 ha fatto bene.
 
-> **Stato:** riscrittura in Rust in corso (R1: nucleo). La prima versione, una web app in Svelte,
-> è conservata nel tag `pwa-final`.
+> **Stato:** versione Rust installabile sul telefono (APK). Le foto dei pasti sono sospese.
+> La prima versione, una web app in Svelte, è conservata nel tag `pwa-final`.
 
 ## Cosa fa
 
@@ -16,8 +16,9 @@ ha fatto bene.
   passphrase (Argon2id + AES-256-GCM). Al blocco la chiave viene cancellata dalla memoria.
 - Registra con un tocco gesti di cura, la cura della casa (bagno, cucina, camera da letto),
   assunzioni e pasti; un check-in breve e facoltativo; i pensieri che tornano.
-- Funziona senza connessione: la versione per il telefono non ha nemmeno il permesso di usare
-  internet.
+- Funziona senza connessione e non si collega a internet. Android le chiede il permesso di rete
+  solo perché l'interfaccia (Dioxus) parla con se stessa su `127.0.0.1`: ogni altra destinazione
+  è bloccata dalla configurazione dell'app (dettagli in `CLAUDE.md`).
 
 ## Cosa non fa
 
@@ -44,7 +45,9 @@ al sicuro. Il backup cifrato sarà la rete di sicurezza.
 ```sh
 cargo test -p kuracare-core                    # test del nucleo
 cargo run -p kuracare-app --features desktop   # l'app sul PC
-dx build --platform android                    # l'APK (servono Android SDK, NDK e JDK 17)
+scripts/apk-release.sh                         # APK firmato (servono Android SDK, NDK, JDK 17
+                                               # e una chiave in ~/.config/kuracare)
+scripts/check-network.sh                       # sul telefono collegato: traffico dell'app
 ```
 
 Le regole del progetto sono in [`CLAUDE.md`](CLAUDE.md).
