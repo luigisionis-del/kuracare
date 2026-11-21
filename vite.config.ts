@@ -38,8 +38,10 @@ export default defineConfig({
     svelte(),
     cspMeta(),
     VitePWA({
-      registerType: 'autoUpdate',
-      injectRegister: 'script',
+      // 'prompt': a new version waits until Luigi taps "Aggiorna" (an automatic
+      // reload would lock the app in the middle of a recording).
+      registerType: 'prompt',
+      injectRegister: false,
       includeAssets: ['icons/*.png', 'icons/*.svg'],
       manifest: {
         name: 'Kuracare',

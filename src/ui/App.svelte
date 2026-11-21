@@ -12,6 +12,7 @@
   import Enrich from './views/Enrich.svelte';
   import Lists from './views/Lists.svelte';
   import Toast from './parts/Toast.svelte';
+  import { applyUpdate, update } from '../lib/update.svelte';
 
   onMount(() => {
     boot();
@@ -19,6 +20,12 @@
 </script>
 
 <main>
+  {#if update.ready}
+    <div class="card soft update" role="status">
+      <span>C'è una versione nuova di Kuracare.</span>
+      <button class="small" onclick={applyUpdate}>Aggiorna</button>
+    </div>
+  {/if}
   {#if session.phase === 'loading'}
     <p class="muted">Un attimo…</p>
   {:else if session.phase === 'onboarding'}
