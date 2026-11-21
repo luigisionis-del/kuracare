@@ -2,6 +2,7 @@ use dioxus::prelude::*;
 
 use crate::platform::vault;
 use crate::state::{Phase, use_app};
+use crate::views::parts::Emblem;
 
 const CONFIRM_WORD: &str = "CANCELLA";
 
@@ -56,6 +57,7 @@ pub fn Unlock() -> Element {
     rsx! {
         if !forgot() {
             section { class: "fade",
+                Emblem {}
                 h1 { "Che bello rivederti" }
                 p { class: "muted", "Kuracare è chiusa per proteggere i tuoi dati." }
                 form { onsubmit: submit,

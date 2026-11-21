@@ -5,6 +5,7 @@ mod notify;
 mod photo;
 mod platform;
 mod state;
+mod theme;
 mod views;
 
 use std::time::Duration;
@@ -24,7 +25,7 @@ const CSP: &str = "default-src 'self'; \
     script-src 'self' 'unsafe-inline' 'unsafe-eval'; \
     style-src 'self' 'unsafe-inline'; \
     img-src 'self' data: blob:; \
-    font-src 'self'; \
+    font-src 'self' data:; \
     connect-src 'self' ws://127.0.0.1:* http://127.0.0.1:*; \
     media-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; \
     form-action 'none'; base-uri 'none'";
@@ -37,6 +38,17 @@ fn main() {
 fn App() -> Element {
     let app = use_context_provider(AppState::new);
     use_hook(platform::clear_capture_dir);
+
+    // Theme: applied now, whenever it changes, and again every minute so that
+    // "Le stagioni" turns on the 1st of the month without a restart.
+    let look = app.look;
+    use_effect(move || theme::apply(look()));
+    use_future(move || async move {
+        loop {
+            tokio::time::sleep(Duration::from_secs(60)).await;
+            theme::apply(*look.peek());
+        }
+    });
 
     // Idle lock: checked every 10 s, and on resume (the loop runs again then).
     use_future(move || async move {
@@ -76,7 +88,8 @@ fn App() -> Element {
     let view = app.view.read().clone();
     rsx! {
         document::Meta { http_equiv: "Content-Security-Policy", content: CSP }
-        style { {CSS} }
+        style { {theme::fonts_css()} }
+        style { {theme::themes_css()} {CSS} }
         main {
             onpointerdown: move |_| touch(),
             onkeydown: move |_| touch(),

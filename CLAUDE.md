@@ -97,6 +97,16 @@ La PWA Svelte (tappe 2-3) è conservata nel tag git `pwa-final`, solo come rifer
   RECEIVE_BOOT_COMPLETED (lo script di firma verifica che siano esattamente questi).
 - Cose da fare: tipo `task` (titolo solo locale; sforzo 1-5, scadenza, stato da fare/fatta/lasciata
   andare). Niente rosso né "in ritardo".
+- **Aspetto (21/11)**: `src/theme.rs` definisce i temi (Zafferano, Salvia, Alba, e le stagioni
+  della Sardegna centrale: Primavera, Estate, Autunno, Inverno; "Le stagioni" cambia il 1/3, 1/6,
+  1/9, 1/12) come gettoni CSS su `:root[data-theme][data-mode]`; `assets/app.css` usa solo quelli.
+  Un test verifica i contrasti WCAG AA di ogni tema, giorno e sera: ogni colore nuovo deve
+  passarlo. Caratteri OFL in `assets/fonts/` (con licenze), inclusi come data: URI (CSP
+  `font-src 'self' data:`). Scelta del tema in chiaro in `look.json` (solo nome e modalità), così
+  lo sblocco ha già il tema. Barre di Android colorate via `Bridge.setBars`. Icone disegnate a
+  mano in `views/parts.rs` (`Icon`, `Emblem`).
+- Ipotesi (21/11, non verificata): i tentativi HTTPS della WebView potrebbero essere il download
+  del seed delle "variations" (in logcat: `variations_seed_loader … Seed missing signature`).
 - Grafici (tappa 5): SVG disegnati a mano, calcoli nel nucleo con test.
 - Questionari: GAD-7 e PHQ-8 con testi **segnaposto**; i testi ufficiali li fornisce Luigi.
   Mai PHQ-9 (item sul suicidio: serve un protocollo con comitato etico).

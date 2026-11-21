@@ -11,11 +11,13 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.os.Build
 import android.provider.Settings
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.view.WindowCompat
 import org.json.JSONObject
 
 /**
@@ -121,6 +123,33 @@ object Bridge {
         val plan = parse(json) ?: return
         val item = plan.items.firstOrNull() ?: return
         show(ctx.applicationContext, item, plan)
+    }
+
+    /**
+     * Status and navigation bars in the theme's background colour.
+     * mode: 0 as the phone (day/evening), 1 always light, 2 always dark.
+     */
+    @JvmStatic
+    fun setBars(ctx: Context, day: Int, night: Int, mode: Int) {
+        val a = ctx as? Activity ?: return
+        a.runOnUiThread {
+            val phoneNight = (a.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) ==
+                Configuration.UI_MODE_NIGHT_YES
+            val dark = when (mode) {
+                1 -> false
+                2 -> true
+                else -> phoneNight
+            }
+            val color = if (dark) night else day
+            @Suppress("DEPRECATION")
+            a.window.statusBarColor = color
+            @Suppress("DEPRECATION")
+            a.window.navigationBarColor = color
+            WindowCompat.getInsetsController(a.window, a.window.decorView).apply {
+                isAppearanceLightStatusBars = !dark
+                isAppearanceLightNavigationBars = !dark
+            }
+        }
     }
 
     /** "kind|key" of the invitation that opened the app, once; null otherwise. */

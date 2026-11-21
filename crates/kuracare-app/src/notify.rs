@@ -150,6 +150,24 @@ mod imp {
     pub fn supported() -> bool {
         true
     }
+
+    /// Colours of the status and navigation bars (ARGB); mode 0 auto, 1 light, 2 dark.
+    pub fn set_bars(day: i32, night: i32, mode: i32) {
+        with_bridge(|env, ctx, class| {
+            env.call_static_method(
+                class,
+                "setBars",
+                format!("({CTX}III)V"),
+                &[
+                    JValue::Object(ctx),
+                    JValue::Int(day),
+                    JValue::Int(night),
+                    JValue::Int(mode),
+                ],
+            )?;
+            Ok(())
+        });
+    }
 }
 
 #[cfg(not(target_os = "android"))]
@@ -169,6 +187,7 @@ mod imp {
     pub fn supported() -> bool {
         false
     }
+    pub fn set_bars(_day: i32, _night: i32, _mode: i32) {}
 }
 
 #[cfg(test)]

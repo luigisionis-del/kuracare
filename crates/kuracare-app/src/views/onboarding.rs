@@ -3,6 +3,7 @@ use kuracare_core::settings::{self, Settings, TimeWindow};
 
 use crate::platform::vault;
 use crate::state::use_app;
+use crate::views::parts::Emblem;
 
 const MIN_LENGTH: usize = 10;
 const STEPS: usize = 5;
@@ -60,6 +61,7 @@ pub fn Onboarding() -> Element {
         match step() {
             0 => rsx! {
                 section { class: "fade",
+                    Emblem {}
                     h1 { "Ti do il benvenuto in Kuracare" }
                     p { "Un posto tranquillo per prenderti cura di te: le cose da fare, come stai, i gesti che ti fanno bene." }
                     p {

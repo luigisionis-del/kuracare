@@ -11,6 +11,7 @@ use kuracare_core::{Event, Origin, Payload, lists, recognition, reminders, repo,
 
 use crate::notify::{self, Tapped};
 use crate::platform::vault;
+use crate::theme::{self, Look};
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Phase {
@@ -57,6 +58,8 @@ pub struct AppState {
     pub lists: Signal<Lists>,
     pub settings: Signal<Settings>,
     pub toast: Signal<Option<Toast>>,
+    /// Theme and day/evening mode: readable before unlocking (see theme.rs).
+    pub look: Signal<Look>,
     toast_seq: Signal<u64>,
     last_phrase: Signal<Option<&'static str>>,
     /// An invitation tapped while Kuracare was locked: followed after unlocking.
@@ -85,6 +88,7 @@ impl AppState {
             lists: Signal::new(Lists::default()),
             settings: Signal::new(Settings::default()),
             toast: Signal::new(None),
+            look: Signal::new(Look::load()),
             toast_seq: Signal::new(0),
             last_phrase: Signal::new(None),
             tapped: Signal::new(None),
@@ -245,6 +249,14 @@ impl AppState {
             }
             Err(err) => self.error(err),
         }
+    }
+
+    pub fn set_look(mut self, l: Look) {
+        if let Err(err) = l.save() {
+            self.error(err);
+        }
+        self.look.set(l);
+        theme::apply(l);
     }
 
     pub fn show_toast(mut self, text: impl Into<String>, action: Option<(String, String)>) {

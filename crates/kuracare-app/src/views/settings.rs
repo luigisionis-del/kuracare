@@ -6,6 +6,7 @@ use kuracare_core::time;
 use crate::labels::{OPEN_PAUSE_YEAR, pause_label};
 use crate::notify;
 use crate::state::{View, use_app};
+use crate::theme::{Look, Mode, Theme, palette};
 use crate::views::parts::Chip;
 
 const PAUSES: [(&str, i64); 3] = [("Un giorno", 1), ("Tre giorni", 3), ("Una settimana", 7)];
@@ -66,9 +67,51 @@ pub fn Settings() -> Element {
         app.update_settings(|s| s.pause_until = until);
     };
 
+    let look = *app.look.read();
+    let swatch = |t: Theme| match t {
+        Theme::Seasons => format!(
+            "background: conic-gradient({} 0 25%, {} 0 50%, {} 0 75%, {} 0)",
+            palette(Theme::Primavera).day.accent,
+            palette(Theme::Estate).day.accent,
+            palette(Theme::Autunno).day.accent,
+            palette(Theme::Inverno).day.accent
+        ),
+        t => format!("background: {}", palette(t).day.accent),
+    };
+
     rsx! {
         section { class: "fade",
             h1 { "Impostazioni" }
+
+            h2 { "Aspetto" }
+            p { class: "label", "Tema" }
+            div { class: "chips", role: "group", aria_label: "Tema",
+                for t in Theme::CHOICES {
+                    button {
+                        key: "{t:?}",
+                        r#type: "button",
+                        class: "chip",
+                        aria_pressed: (look.theme == t).to_string(),
+                        onclick: move |_| app.set_look(Look { theme: t, ..*app.look.peek() }),
+                        span { class: "swatch", style: swatch(t) }
+                        "{t.label()}"
+                    }
+                }
+            }
+            if look.theme == Theme::Seasons {
+                p { class: "hint", "Cambia da solo il 1° marzo, il 1° giugno, il 1° settembre e il 1° dicembre. Ora: {Theme::Seasons.resolve(time::now().month()).label()}." }
+            }
+            p { class: "label", "Giorno e sera" }
+            div { class: "chips", role: "group", aria_label: "Giorno e sera",
+                for m in Mode::ALL {
+                    Chip {
+                        key: "{m:?}",
+                        label: m.label(),
+                        pressed: look.mode == m,
+                        onclick: move |_| app.set_look(Look { mode: m, ..*app.look.peek() }),
+                    }
+                }
+            }
 
             h2 { "Inviti" }
             p { class: "muted",
