@@ -11,11 +11,13 @@ pub mod export;
 pub mod kinds;
 pub mod lists;
 pub mod migrations;
+pub mod questionnaires;
 pub mod recognition;
 pub mod reminders;
 pub mod repo;
 pub mod settings;
 pub mod store;
+pub mod summary;
 pub mod time;
 pub mod vault;
 

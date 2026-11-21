@@ -219,6 +219,18 @@ impl Task {
     }
 }
 
+/// Answers to a versioned questionnaire (see `questionnaires`).
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Questionnaire {
+    pub instrument: String,
+    /// Instrument version, never migrated.
+    pub version: String,
+    /// One per item, in order; None = skipped.
+    pub answers: Vec<Option<u8>>,
+    pub score: Option<u32>,
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub enum Payload {
     Checkin(Checkin),
@@ -230,10 +242,11 @@ pub enum Payload {
     Supplement(Supplement),
     Meal(Meal),
     Task(Task),
+    Questionnaire(Questionnaire),
 }
 
 /// Every kind with its current schema version.
-pub const KINDS: [(&str, u32); 9] = [
+pub const KINDS: [(&str, u32); 10] = [
     ("checkin", 1),
     ("thought", 1),
     ("care", 1),
@@ -243,6 +256,7 @@ pub const KINDS: [(&str, u32); 9] = [
     ("supplement", 1),
     ("meal", 1),
     ("task", 1),
+    ("questionnaire", 1),
 ];
 
 /// Allow-list for research exports. Never free text, photos or preset ids.
@@ -256,6 +270,7 @@ pub fn research_fields(kind: &str) -> &'static [&'static str] {
         "supplement" => &["name", "amount", "unit"],
         "meal" => &["mealType"],
         "task" => &["dueDate", "dueTime", "effort", "status", "closedAt"],
+        "questionnaire" => &["instrument", "version", "answers", "score"],
         _ => &[],
     }
 }
@@ -272,6 +287,7 @@ impl Payload {
             Self::Supplement(_) => "supplement",
             Self::Meal(_) => "meal",
             Self::Task(_) => "task",
+            Self::Questionnaire(_) => "questionnaire",
         }
     }
 
@@ -290,6 +306,7 @@ impl Payload {
             Self::Supplement(p) => serde_json::to_value(p)?,
             Self::Meal(p) => serde_json::to_value(p)?,
             Self::Task(p) => serde_json::to_value(p)?,
+            Self::Questionnaire(p) => serde_json::to_value(p)?,
         })
     }
 
@@ -304,6 +321,7 @@ impl Payload {
             "supplement" => Self::Supplement(serde_json::from_value(v)?),
             "meal" => Self::Meal(serde_json::from_value(v)?),
             "task" => Self::Task(serde_json::from_value(v)?),
+            "questionnaire" => Self::Questionnaire(serde_json::from_value(v)?),
             other => return Err(Error::Unsupported(format!("event kind {other}"))),
         })
     }
@@ -422,6 +440,12 @@ mod tests {
                 due_time: Some("10:00".into()),
                 effort: Some(2),
                 ..Task::new("Chiamare il medico")
+            }),
+            Payload::Questionnaire(Questionnaire {
+                instrument: "gad7".into(),
+                version: "gad7@placeholder-0".into(),
+                answers: vec![Some(1), None],
+                score: None,
             }),
         ];
         assert_eq!(samples.len(), KINDS.len());

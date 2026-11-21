@@ -106,6 +106,8 @@ fn App() -> Element {
                         View::Enrich => rsx! { views::enrich::Enrich {} },
                         View::Lists => rsx! { views::lists::Lists {} },
                         View::Settings => rsx! { views::settings::Settings {} },
+                        View::Summary => rsx! { views::summary::Summary {} },
+                        View::Questionnaire(id) => rsx! { views::questionnaire::Questionnaire { key: "{id}", id: id.clone() } },
                     }
                     ToastBar {}
                 },

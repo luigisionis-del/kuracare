@@ -3,8 +3,8 @@ use kuracare_core::kinds::{
     Cannabis, Care, Home as HomeCare, MealType, Payload, Reflection, Supplement, Task, TaskStatus,
 };
 use kuracare_core::lists::{StrainGroup, StrainPreset, SupplementPreset};
-use kuracare_core::time;
 use kuracare_core::{Event, Origin};
+use kuracare_core::{questionnaires, time};
 
 use crate::labels::{day_label, describe, greeting, long_date, meal_label, pause_label};
 use crate::state::{View, use_app};
@@ -179,6 +179,15 @@ pub fn Home() -> Element {
         }
     };
 
+    let due: Vec<(String, String)> = if paused {
+        vec![]
+    } else {
+        let defs = questionnaires::builtin();
+        questionnaires::due(&defs, &app.events.read(), now.timestamp())
+            .into_iter()
+            .map(|d| (d.id.clone(), d.name.clone()))
+            .collect()
+    };
     let bloomed = bloom.read().clone();
     let chip_class = move |key: String| {
         if bloomed.as_deref() == Some(key.as_str()) {
@@ -228,6 +237,21 @@ pub fn Home() -> Element {
                     p { class: "muted", "Cinque domande veloci, tutte facoltative." }
                     button { class: "primary wide", onclick: move |_| app.go(View::Checkin(Origin::Spontaneous)), "Fai il check-in" }
                 }
+            }
+
+            for (id, name) in due {
+                div { key: "{id}", class: "card soft",
+                    p { "Ti va di rispondere al questionario delle due settimane ({name})? Ci vogliono un paio di minuti." }
+                    button { class: "small", onclick: move |_| app.go(View::Questionnaire(id.clone())), "Rispondi" }
+                }
+            }
+
+            div { class: "card week-card",
+                div {
+                    h2 { class: "first sec", Icon { name: "today" } "La tua settimana" }
+                    p { class: "muted", "Cosa ti ha fatto bene, e come sono andati i giorni." }
+                }
+                button { class: "small", onclick: move |_| app.go(View::Summary), "Guarda" }
             }
 
             h2 { class: "sec", Icon { name: "tasks" } "Cose da fare" }

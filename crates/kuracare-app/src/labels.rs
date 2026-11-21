@@ -98,6 +98,7 @@ pub fn describe(e: &Event) -> String {
         ]),
         Payload::Supplement(s) => join(&[s.name.clone(), amount(s.amount, &s.unit)]),
         Payload::Task(t) => t.title.clone(),
+        Payload::Questionnaire(q) => format!("Questionario {}", q.instrument.to_uppercase()),
         Payload::Meal(m) => join(&[
             meal_label(m.meal_type).into(),
             m.description.clone().unwrap_or_else(|| {
@@ -120,7 +121,7 @@ pub fn greeting(hour: i8) -> &'static str {
     }
 }
 
-const WEEKDAYS: [&str; 7] = [
+pub const WEEKDAYS: [&str; 7] = [
     "lunedì",
     "martedì",
     "mercoledì",
@@ -129,7 +130,7 @@ const WEEKDAYS: [&str; 7] = [
     "sabato",
     "domenica",
 ];
-const MONTHS: [&str; 12] = [
+pub const MONTHS: [&str; 12] = [
     "gennaio",
     "febbraio",
     "marzo",

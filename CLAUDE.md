@@ -107,7 +107,14 @@ La PWA Svelte (tappe 2-3) è conservata nel tag git `pwa-final`, solo come rifer
   mano in `views/parts.rs` (`Icon`, `Emblem`).
 - Ipotesi (21/11, non verificata): i tentativi HTTPS della WebView potrebbero essere il download
   del seed delle "variations" (in logcat: `variations_seed_loader … Seed missing signature`).
-- Grafici (tappa 5): SVG disegnati a mano, calcoli nel nucleo con test.
+- **Riepilogo settimanale (tappa 5, 21/11)**: `kuracare-core/src/summary.rs` (settimana lun-dom
+  locale; prima ciò che ha fatto bene, poi medie giornaliere per voce con i buchi lasciati vuoti,
+  poi associazioni sulle ultime 4 settimane, mostrate solo con ≥3 giorni con check-in per gruppo:
+  regola di visualizzazione, non soglia statistica). Grafici SVG a mano in `views/summary.rs`, una
+  serie per grafico, tabella dei numeri, nota fissa "Un'associazione non indica una causa".
+- Questionari: motore in `kuracare-core/src/questionnaires.rs`, definizioni in
+  `content/questionnaires/*.it.json` con testi SEGNAPOSTO e `ready: false` (nascosti nell'app).
+  Nessuna soglia di interpretazione mostrata.
 - Questionari: GAD-7 e PHQ-8 con testi **segnaposto**; i testi ufficiali li fornisce Luigi.
   Mai PHQ-9 (item sul suicidio: serve un protocollo con comitato etico).
 

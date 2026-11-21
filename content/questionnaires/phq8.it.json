@@ -1,0 +1,38 @@
+{
+  "id": "phq8",
+  "version": "phq8@placeholder-0",
+  "name": "PHQ-8",
+  "ready": false,
+  "everyDays": 14,
+  "_note": "Testi, opzioni e punteggio sono segnaposto: Kuracare non li inventa. Struttura da verificare sulla fonte ufficiale (numero di item, valori 0-3, somma). Finché ready è false il questionario non compare nell'app. Nessuna soglia di interpretazione: l'app non ne mostra.",
+  "intro": "[SEGNAPOSTO: istruzioni ufficiali italiane del PHQ-8, da inserire da Luigi dopo la verifica della licenza]",
+  "items": [
+    "[SEGNAPOSTO: testo ufficiale dell'item 1 del PHQ-8]",
+    "[SEGNAPOSTO: testo ufficiale dell'item 2 del PHQ-8]",
+    "[SEGNAPOSTO: testo ufficiale dell'item 3 del PHQ-8]",
+    "[SEGNAPOSTO: testo ufficiale dell'item 4 del PHQ-8]",
+    "[SEGNAPOSTO: testo ufficiale dell'item 5 del PHQ-8]",
+    "[SEGNAPOSTO: testo ufficiale dell'item 6 del PHQ-8]",
+    "[SEGNAPOSTO: testo ufficiale dell'item 7 del PHQ-8]",
+    "[SEGNAPOSTO: testo ufficiale dell'item 8 del PHQ-8]"
+  ],
+  "options": [
+    {
+      "label": "[SEGNAPOSTO: opzione di risposta 0]",
+      "value": 0
+    },
+    {
+      "label": "[SEGNAPOSTO: opzione di risposta 1]",
+      "value": 1
+    },
+    {
+      "label": "[SEGNAPOSTO: opzione di risposta 2]",
+      "value": 2
+    },
+    {
+      "label": "[SEGNAPOSTO: opzione di risposta 3]",
+      "value": 3
+    }
+  ],
+  "scoring": "sum"
+}

@@ -30,6 +30,8 @@ pub enum View {
     Enrich,
     Lists,
     Settings,
+    Summary,
+    Questionnaire(String),
 }
 
 #[derive(Clone, Debug, PartialEq)]

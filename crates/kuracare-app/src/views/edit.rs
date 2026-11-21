@@ -348,6 +348,9 @@ pub fn Edit(id: String) -> Element {
                         p { class: "hint", "Lasciar andare una cosa è una scelta, non un fallimento." }
                     }
                 },
+                Payload::Questionnaire(_) => rsx! {
+                    p { class: "hint", "Le risposte del questionario restano com'erano in quel momento: puoi cambiarne solo l'ora." }
+                },
                 Payload::Reflection(r) => rsx! {
                     label { r#for: "rf", "Cosa ti ha fatto bene" }
                     input {
