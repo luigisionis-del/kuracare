@@ -74,8 +74,19 @@ uso di ricerca (EMA) con dati standardizzati e versionati.
   THC-dominanti dalla collaborazione Sherbinskis × Silent Seeds; CBD-dominanti di High Alpine
   (es. "Mandarine Flokies", "Lemon Cockies" — nomi da confermare con Luigi).
 
+## Tappa 3: registrazioni (21/11/2026)
+
+- Tipi di evento in `src/core/events/kinds.ts`, ciascuno con il suo elenco `research` di campi
+  ammessi all'esportazione per la ricerca (mai testo libero né foto: c'è un test).
+- Liste modificabili (varietà, integratori, gesti, pensieri) in `cfg:lists`, senza valori inventati.
+- "Se ti va": angolo che apre solo Luigi, per aggiungere dettagli *fattuali* agli ultimi 7 giorni
+  (max 5, "Va bene così" li toglie per sempre). Le risposte del check-in non si completano mai
+  a posteriori: sarebbero ricordi, non istantanee. Ogni modifica tiene `recordedAt` e segna `editedAt`.
+- Etichette e ancore di `core-v0.1` in `src/lib/labels.ts`: provvisorie.
+
 ## Comandi
 
 - `npm run dev` · `npm run build` · `npm run preview`
-- `npm test` (Vitest, unità) · `npm run e2e` (Playwright su build di produzione, viewport Pixel)
+- `npm test` (Vitest, unità) · `npm run e2e` (Playwright su build di produzione, viewport Pixel,
+  porta propria 4183: la 4173 è per il telefono via `adb reverse`)
 - `npm run check` (svelte-check)

@@ -1,10 +1,12 @@
-import { Vault } from '../core/store/vault';
 import { DEFAULT_SETTINGS, loadSettings, saveSettings, type Settings } from '../core/settings';
 import { startIdleLock } from './idle';
+import { vault } from './vault';
+import { clearDiary, loadDiary } from './diary.svelte';
+import { resetNav } from './nav.svelte';
 
 export type Phase = 'loading' | 'onboarding' | 'locked' | 'unlocked';
 
-export const vault = new Vault();
+export { vault };
 
 export const session = $state<{ phase: Phase; settings: Settings }>({
   phase: 'loading',
@@ -19,6 +21,8 @@ export async function boot(): Promise<void> {
 
 async function afterUnlock(): Promise<void> {
   session.settings = await loadSettings(vault);
+  await loadDiary();
+  resetNav();
   session.phase = 'unlocked';
   stopIdle?.();
   stopIdle = startIdleLock(session.settings.lockAfterMinutes, lock);
@@ -45,8 +49,15 @@ export function lock(): void {
   stopIdle?.();
   stopIdle = null;
   vault.lock();
+  clearDiary();
+  resetNav();
   session.settings = { ...DEFAULT_SETTINGS };
   session.phase = 'locked';
+}
+
+export async function updateSettings(patch: Partial<Settings>): Promise<void> {
+  session.settings = { ...session.settings, ...patch };
+  await saveSettings(vault, $state.snapshot(session.settings));
 }
 
 export async function destroyEverything(): Promise<void> {

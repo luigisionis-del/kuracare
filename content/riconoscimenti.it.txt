@@ -1,0 +1,18 @@
+# Frasi di riconoscimento: una per riga. Le righe che iniziano con # sono ignorate.
+# Compaiono dopo un check-in o un gesto di cura. Modificale come vuoi:
+# sobrie, varie, mai stucchevoli, neutre rispetto al genere.
+Segnato. Grazie per questo attimo per te.
+Fatto. Anche questo conta.
+Un piccolo gesto, e resta.
+Bene così.
+Un momento di ascolto. È già qualcosa.
+Preso nota, con cura.
+Un passo alla volta.
+È tuo, e resta qui.
+Anche guardarsi dentro è cura.
+Ecco fatto. Il resto può aspettare.
+Un attimo di attenzione, tutto per te.
+Grazie a te.
+Un momento per te, messo da parte.
+Fatto con calma.
+Questo è un buon gesto.

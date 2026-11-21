@@ -12,6 +12,8 @@ export interface Settings {
   lockAfterMinutes: number;
   /** ISO date; while in the future, the app asks nothing. */
   pauseUntil: string | null;
+  /** Local date (YYYY-MM-DD) when the evening meal question got a "non ora". */
+  mealRecallDismissedOn?: string | null;
 }
 
 export const SETTINGS_ID = 'cfg:settings';

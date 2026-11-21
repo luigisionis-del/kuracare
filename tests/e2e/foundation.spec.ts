@@ -36,7 +36,6 @@ test('first run: nothing can be saved without a passphrase', async ({ page, exte
 
 test('onboarding, lock and unlock', async ({ page, external, cspViolations }) => {
   await onboard(page, { window: true });
-  await expect(page.getByText('dalle 09:00 alle 10:00')).toBeVisible();
 
   await page.getByRole('button', { name: 'Chiudi Kuracare' }).click();
   await expect(page.getByRole('heading', { name: 'Che bello rivederti' })).toBeVisible();
@@ -47,7 +46,7 @@ test('onboarding, lock and unlock', async ({ page, external, cspViolations }) =>
 
   await page.getByLabel('Passphrase').fill(PASSPHRASE);
   await page.getByRole('button', { name: 'Apri' }).click();
-  await expect(page.getByText('dalle 09:00 alle 10:00')).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByRole('button', { name: 'Fai il check-in' })).toBeVisible({ timeout: 20_000 });
 });
 
 test('reload always starts locked', async ({ page, external, cspViolations }) => {

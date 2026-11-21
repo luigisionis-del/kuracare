@@ -30,6 +30,8 @@ export interface KuraEvent<K extends string = string, P = unknown> {
   /** When it was written, ISO 8601 with offset. */
   recordedAt: string;
   editedAt?: string;
+  /** "Va bene così": never offered again for enrichment. */
+  settled?: boolean;
 }
 
 export const EVENT_PREFIX = 'evt:';
