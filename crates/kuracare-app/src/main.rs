@@ -82,8 +82,7 @@ fn App() -> Element {
                await new Promise(() => {});"#,
         );
         while ev.recv::<String>().await.is_ok() {
-            let mut view = app.view;
-            view.set(View::Home);
+            app.popped();
         }
     });
 
@@ -112,6 +111,10 @@ fn App() -> Element {
                         View::Settings => rsx! { views::settings::Settings {} },
                         View::Summary => rsx! { views::summary::Summary {} },
                         View::Data => rsx! { views::data::Data {} },
+                        View::Growth => rsx! { views::growth::Growth {} },
+                        View::GrowthStep(s) => rsx! { views::growth::StepView { key: "{s}", step: s.clone() } },
+                        View::GrowthCard(s, c, r) => rsx! { views::growth::CardView { key: "{s}/{c}/{r}", step: s.clone(), card: c.clone(), review: r } },
+                        View::GrowthPractice(s, p) => rsx! { views::growth::PracticeView { key: "{s}/{p}", step: s.clone(), practice: p.clone() } },
                         View::Questionnaire(id) => rsx! { views::questionnaire::Questionnaire { key: "{id}", id: id.clone() } },
                     }
                     ToastBar {}

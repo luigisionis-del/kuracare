@@ -17,23 +17,30 @@ pub fn kind_icon(p: &Payload) -> &'static str {
         Payload::Meal(_) => "meal",
         Payload::Task(_) => "tasks",
         Payload::DataRelease(_) => "lock",
-        Payload::GrowthRead(_) | Payload::GrowthPractice(_) | Payload::GrowthStage(_) => "sparkle",
+        Payload::GrowthRead(_) | Payload::GrowthPractice(_) | Payload::GrowthStage(_) => "growth",
     }
 }
 
-/// Top of every inner screen: back to Home, then the title with its icon.
+/// Top of every inner screen: back one level (Home, or `up` inside Crescita),
+/// then the title with its icon.
 #[component]
-pub fn ScreenHead(title: String, icon: Option<&'static str>, subtitle: Option<String>) -> Element {
+pub fn ScreenHead(
+    title: String,
+    icon: Option<&'static str>,
+    subtitle: Option<String>,
+    up: Option<String>,
+) -> Element {
     let app = use_app();
+    let up = up.unwrap_or_else(|| "Home".into());
     rsx! {
         header { class: "screen-head",
             button {
                 class: "back",
                 r#type: "button",
-                aria_label: "Torna alla Home",
-                onclick: move |_| app.back(),
+                aria_label: "Torna a: {up}",
+                onclick: move |_| app.up(),
                 Icon { name: "back" }
-                "Home"
+                "{up}"
             }
             h1 { class: "sec",
                 if let Some(i) = icon { Icon { name: i } }
@@ -177,6 +184,13 @@ fn icon_paths(name: &str) -> &'static [&'static str] {
             "M14.8 12a2.8 2.8 0 1 1-5.6 0 2.8 2.8 0 0 1 5.6 0z",
         ],
         "close" => &["M7.5 7.5l9 9M16.5 7.5l-9 9"],
+        // A sprout: Crescita.
+        "growth" => &[
+            "M12 20.5v-9",
+            "M12 11.5c0-3.9 2.9-6.3 7-6.3 0 3.9-2.9 6.3-7 6.3z",
+            "M12 14.5c0-3.1-2.4-5-5.6-5 0 3.1 2.4 5 5.6 5z",
+            "M7.5 20.5h9",
+        ],
         _ => &[],
     }
 }

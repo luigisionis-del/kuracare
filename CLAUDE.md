@@ -141,6 +141,14 @@ La PWA Svelte (tappe 2-3) è conservata nel tag git `pwa-final`, solo come rifer
   di schede già lette, come invito con "non ora" (`growth_review_dismissed_on`). Collegamenti:
   matrice del tempo ↔ cose da fare (`refId`), abitudine 7 ↔ gesti di cura (`care_dimensions`).
   Testi e `refId` mai nell'esportazione per la ricerca.
+- **Crescita, interfaccia (tappa 7b, 22/11)**: `views/growth.rs` (percorso, passo, scheda,
+  esercizio; matrice con le cose da fare aperte). Campi lunghi non controllati (`initial_value`):
+  con `value` la digitazione veloce perdeva lettere (visto nell'emulatore). Ripasso: in Crescita
+  una scheda dopo l'altra; in Home al massimo un invito al giorno.
+- **Indietro (22/11)**: `View::parent`/`depth`; dentro Crescita si risale di un livello. Una voce
+  di cronologia per ogni livello sceso con un tocco (`AppState::go`), tolta da `up`/`back`
+  (`own_pops` ignora i popstate nostri). Mai `pushState` dentro popstate: Chrome salta le voci
+  aggiunte senza gesto dell'utente e il secondo "indietro" chiudeva l'app (visto nell'emulatore).
 
 ## Decisioni prese (21/11/2026)
 

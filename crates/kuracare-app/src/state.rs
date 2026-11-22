@@ -33,6 +33,36 @@ pub enum View {
     Summary,
     Questionnaire(String),
     Data,
+    /// Crescita: the path.
+    Growth,
+    /// A step of the path (step id).
+    GrowthStep(String),
+    /// A card (step id, card id, opened as a review).
+    GrowthCard(String, String, bool),
+    /// An exercise (step id, practice id).
+    GrowthPractice(String, String),
+}
+
+impl View {
+    /// Where "back" leads: Home, except inside Crescita.
+    pub fn parent(&self) -> View {
+        match self {
+            Self::GrowthStep(_) => Self::Growth,
+            Self::GrowthCard(_, _, true) => Self::Growth,
+            Self::GrowthCard(s, _, false) | Self::GrowthPractice(s, _) => {
+                Self::GrowthStep(s.clone())
+            }
+            _ => Self::Home,
+        }
+    }
+
+    /// How deep the screen is: Home 0, sections 1, inside Crescita up to 3.
+    pub fn depth(&self) -> u32 {
+        match self {
+            Self::Home => 0,
+            other => 1 + other.parent().depth(),
+        }
+    }
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -67,6 +97,10 @@ pub struct AppState {
     last_phrase: Signal<Option<&'static str>>,
     /// An invitation tapped while Kuracare was locked: followed after unlocking.
     tapped: Signal<Option<Tapped>>,
+    /// History entries pushed for the back gesture (one per level gone down).
+    hist: Signal<u32>,
+    /// popstate events caused by our own history.back()/go(), to be ignored.
+    own_pops: Signal<u32>,
 }
 
 pub fn use_app() -> AppState {
@@ -95,6 +129,8 @@ impl AppState {
             toast_seq: Signal::new(0),
             last_phrase: Signal::new(None),
             tapped: Signal::new(None),
+            hist: Signal::new(0),
+            own_pops: Signal::new(0),
         }
     }
 
@@ -155,26 +191,71 @@ impl AppState {
         self.lists.set(Lists::default());
         self.settings.set(Settings::default());
         self.toast.set(None);
-        self.view.set(View::Home);
+        self.back();
         self.phase.set(Phase::Locked);
     }
 
+    // Android's back gesture walks the WebView history. One entry is pushed
+    // for every level gone down with a tap (Chrome skips entries pushed
+    // without a user gesture, so none is ever pushed from popstate), and one
+    // is taken away for every level climbed with our own buttons.
+
     pub fn go(mut self, v: View) {
-        if *self.view.peek() == View::Home && v != View::Home {
-            // So that Android's back gesture returns home instead of closing the app.
+        if v.depth() > self.view.peek().depth() {
             document::eval("history.pushState({kuracare: 1}, '')");
+            *self.hist.write() += 1;
         }
         self.toast.set(None);
-        self.view.set(v);
-        document::eval("window.scrollTo(0, 0)");
+        self.show(v);
     }
 
-    pub fn back(mut self) {
-        if *self.view.peek() != View::Home {
-            self.view.set(View::Home);
-            document::eval("if (history.state && history.state.kuracare) history.back()");
-            document::eval("window.scrollTo(0, 0)");
+    /// One level up (Home for every screen outside Crescita).
+    pub fn up(mut self) {
+        let parent = self.view.peek().parent();
+        if parent == View::Home {
+            self.back();
+            return;
         }
+        if *self.hist.peek() > 0 {
+            *self.hist.write() -= 1;
+            *self.own_pops.write() += 1;
+            document::eval("history.back()");
+        }
+        self.show(parent);
+    }
+
+    /// Straight back to Home, dropping every entry pushed on the way.
+    pub fn back(mut self) {
+        let n = *self.hist.peek();
+        if n > 0 {
+            self.hist.set(0);
+            *self.own_pops.write() += 1;
+            document::eval(&format!("history.go(-{n})"));
+        }
+        if *self.view.peek() != View::Home {
+            self.show(View::Home);
+        }
+    }
+
+    /// A popstate: ours (ignored), or the back gesture (one level up).
+    pub fn popped(mut self) {
+        if *self.own_pops.peek() > 0 {
+            *self.own_pops.write() -= 1;
+            return;
+        }
+        let n = *self.hist.peek();
+        self.hist.set(n.saturating_sub(1));
+        let parent = self.view.peek().parent();
+        if parent == View::Home {
+            self.back();
+        } else {
+            self.show(parent);
+        }
+    }
+
+    fn show(mut self, v: View) {
+        self.view.set(v);
+        document::eval("window.scrollTo(0, 0)");
     }
 
     pub fn record(self, payload: Payload) -> Option<Event> {
@@ -289,5 +370,24 @@ impl AppState {
 
     pub fn error(self, err: impl std::fmt::Display) {
         self.show_toast(format!("Qualcosa non è andato: {err}"), None);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::View;
+
+    #[test]
+    fn crescita_climbs_one_level_at_a_time() {
+        let practice = View::GrowthPractice("basi".into(), "spiega".into());
+        assert_eq!(practice.parent(), View::GrowthStep("basi".into()));
+        assert_eq!(practice.depth(), 3);
+        let review = View::GrowthCard("basi".into(), "paradigmi".into(), true);
+        assert_eq!(review.parent(), View::Growth);
+        assert_eq!(review.depth(), 2);
+        assert_eq!(View::GrowthStep("basi".into()).parent(), View::Growth);
+        assert_eq!(View::Growth.parent(), View::Home);
+        assert_eq!(View::Settings.depth(), 1);
+        assert_eq!(View::Home.depth(), 0);
     }
 }

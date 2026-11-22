@@ -2,6 +2,7 @@ pub mod checkin;
 pub mod data;
 pub mod edit;
 pub mod enrich;
+pub mod growth;
 pub mod home;
 pub mod lists;
 pub mod meal;

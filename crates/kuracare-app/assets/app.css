@@ -326,3 +326,30 @@ ul.preview li { font-size: 0.93rem; overflow-wrap: anywhere; }
 .entry.static { cursor: default; flex-wrap: wrap; }
 .entry.static > span:last-child { flex: 1; min-width: 0; overflow-wrap: anywhere; }
 .danger-zone h2 { color: var(--danger); }
+
+/* ---------- Crescita ---------- */
+textarea {
+  width: 100%; max-width: 100%; min-height: calc(var(--tap) * 1.6); padding: var(--s3) var(--s4);
+  border-radius: calc(var(--radius) - 6px); border: 1px solid var(--border);
+  background: var(--surface); color: var(--text); font: inherit; line-height: 1.5; resize: vertical;
+}
+p.first { margin-top: 0; }
+p.idea { font-size: 1.02rem; }
+p.reading { font-size: 1.08rem; line-height: 1.7; margin: var(--s4) 0 var(--s5); }
+p.mission { font-family: var(--f-head); font-size: 1.05rem; white-space: pre-line; }
+.step-row { display: flex; align-items: center; gap: var(--s3); min-height: var(--tap); }
+.step-num { flex: none; width: 2rem; height: 2rem; border-radius: 50%; display: grid; place-items: center;
+  background: var(--accent-soft); font-family: var(--f-head); font-weight: var(--head-weight); }
+.step-text { flex: 1; min-width: 0; display: flex; flex-direction: column; overflow-wrap: anywhere; }
+.step-text .muted { font-size: 0.9rem; }
+.step-status { flex: none; display: flex; align-items: center; gap: var(--s1); color: var(--muted);
+  font-size: 0.85rem; max-width: 40%; text-align: right; }
+.dot-new { width: 18px; height: 18px; flex: none; border-radius: 50%; border: 2px solid var(--icon); }
+.card.earlier p { margin: var(--s1) 0; overflow-wrap: anywhere; white-space: pre-line; }
+.label-inline { font-weight: 700; }
+.matrix-row { padding: var(--s2) 0; border-top: 1px solid var(--border); }
+.matrix-row p { margin: 0 0 var(--s1); overflow-wrap: anywhere; }
+.matrix-row .chip { min-width: 52px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.matrix-row .chips { margin-bottom: 0; }
+.card.quadrant { padding-bottom: var(--s2); }

@@ -40,7 +40,13 @@ pub fn Home() -> Element {
         .events
         .read()
         .iter()
-        .filter(|e| time::local_day(&e.ts) == today && !matches!(e.payload, Payload::Task(_)))
+        .filter(|e| {
+            time::local_day(&e.ts) == today
+                && !matches!(
+                    e.payload,
+                    Payload::Task(_) | Payload::GrowthRead(_) | Payload::GrowthStage(_)
+                )
+        })
         .cloned()
         .collect();
     // Open tasks: due today or before, any time, later (each sorted by when).
@@ -65,6 +71,24 @@ pub fn Home() -> Element {
         .iter()
         .find(|e| matches!(e.payload, Payload::Reflection(_)))
         .cloned();
+    // At most one invitation a day here: after a review, Home stays quiet.
+    let reviewed_today = app.events.read().iter().any(|e| {
+        matches!(&e.payload, Payload::GrowthRead(r) if r.review) && time::local_day(&e.ts) == today
+    });
+    let growth_review = if reviewed_today
+        || settings.growth_review_dismissed_on.as_deref() == Some(today.as_str())
+    {
+        None
+    } else {
+        kuracare_core::growth::due_reviews(
+            &crate::labels::PATH,
+            &app.events.read(),
+            now.timestamp(),
+        )
+        .first()
+        .and_then(|d| crate::labels::PATH.step(&d.step)?.card(&d.card))
+        .map(|c| c.title.clone())
+    };
     let meals_left: Vec<MealType> = [MealType::Breakfast, MealType::Lunch, MealType::Dinner]
         .into_iter()
         .filter(|t| {
@@ -365,6 +389,27 @@ pub fn Home() -> Element {
             h2 { class: "sec", Icon { name: "thought" } "Un pensiero che torna" }
             p { class: "muted", "Se c'è un pensiero che gira, puoi posarlo qui." }
             button { onclick: move |_| app.go(View::Thought), "Segna un pensiero" }
+
+            h2 { class: "sec", Icon { name: "growth" } "Crescita" }
+            if let Some(title) = growth_review {
+                div { class: "card soft",
+                    p { class: "first", "Ti va di ripassare «{title}»?" }
+                    div { class: "row",
+                        button { class: "small", onclick: move |_| app.go(View::Growth), "Apri la Crescita" }
+                        button {
+                            class: "quiet small",
+                            onclick: move |_| {
+                                let today = time::today();
+                                app.update_settings(|s| s.growth_review_dismissed_on = Some(today));
+                            },
+                            "Non ora"
+                        }
+                    }
+                }
+            } else {
+                p { class: "muted", "Le sette abitudini di Covey, un passo alla volta." }
+                button { onclick: move |_| app.go(View::Growth), "Apri il percorso" }
+            }
 
             if !evening { {reflection_card} }
 
