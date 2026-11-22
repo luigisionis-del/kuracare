@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 use crate::error::{Error, Result};
+pub use crate::growth::{GrowthPractice, GrowthRead, GrowthStage};
 
 pub const CHECKIN_ITEM_SET: &str = "core-v0.1";
 
@@ -271,10 +272,13 @@ pub enum Payload {
     Task(Task),
     Questionnaire(Questionnaire),
     DataRelease(DataRelease),
+    GrowthRead(GrowthRead),
+    GrowthPractice(GrowthPractice),
+    GrowthStage(GrowthStage),
 }
 
 /// Every kind with its current schema version.
-pub const KINDS: [(&str, u32); 11] = [
+pub const KINDS: [(&str, u32); 14] = [
     ("checkin", 1),
     ("thought", 1),
     ("care", 1),
@@ -286,6 +290,9 @@ pub const KINDS: [(&str, u32); 11] = [
     ("task", 1),
     ("questionnaire", 1),
     ("dataRelease", 1),
+    ("growthRead", 1),
+    ("growthPractice", 1),
+    ("growthStage", 1),
 ];
 
 /// Allow-list for research exports. Never free text, photos or preset ids.
@@ -303,6 +310,10 @@ pub fn research_fields(kind: &str) -> &'static [&'static str] {
         "dataRelease" => &[
             "scope", "format", "from", "to", "kinds", "records", "consent",
         ],
+        // Growth: ids and choices only, never texts or linked records.
+        "growthRead" => &["pathVersion", "step", "card", "review"],
+        "growthPractice" => &["pathVersion", "step", "practice", "choice"],
+        "growthStage" => &["pathVersion", "step", "stage"],
         _ => &[],
     }
 }
@@ -321,6 +332,9 @@ impl Payload {
             Self::Task(_) => "task",
             Self::Questionnaire(_) => "questionnaire",
             Self::DataRelease(_) => "dataRelease",
+            Self::GrowthRead(_) => "growthRead",
+            Self::GrowthPractice(_) => "growthPractice",
+            Self::GrowthStage(_) => "growthStage",
         }
     }
 
@@ -341,6 +355,9 @@ impl Payload {
             Self::Task(p) => serde_json::to_value(p)?,
             Self::Questionnaire(p) => serde_json::to_value(p)?,
             Self::DataRelease(p) => serde_json::to_value(p)?,
+            Self::GrowthRead(p) => serde_json::to_value(p)?,
+            Self::GrowthPractice(p) => serde_json::to_value(p)?,
+            Self::GrowthStage(p) => serde_json::to_value(p)?,
         })
     }
 
@@ -357,6 +374,9 @@ impl Payload {
             "task" => Self::Task(serde_json::from_value(v)?),
             "questionnaire" => Self::Questionnaire(serde_json::from_value(v)?),
             "dataRelease" => Self::DataRelease(serde_json::from_value(v)?),
+            "growthRead" => Self::GrowthRead(serde_json::from_value(v)?),
+            "growthPractice" => Self::GrowthPractice(serde_json::from_value(v)?),
+            "growthStage" => Self::GrowthStage(serde_json::from_value(v)?),
             other => return Err(Error::Unsupported(format!("event kind {other}"))),
         })
     }
@@ -404,6 +424,8 @@ mod tests {
                 "photoId",
                 "presetId",
                 "title",
+                "texts",
+                "refId",
             ] {
                 assert!(
                     !research_fields(kind).contains(&forbidden),
@@ -491,6 +513,25 @@ mod tests {
                 records: 12,
                 destination: "kuracare.csv".into(),
                 consent: Consent::Given,
+            }),
+            Payload::GrowthRead(GrowthRead {
+                path_version: "crescita-v0.1".into(),
+                step: "proattivi".into(),
+                card: "cerchi".into(),
+                review: true,
+            }),
+            Payload::GrowthPractice(GrowthPractice {
+                path_version: "crescita-v0.1".into(),
+                step: "proattivi".into(),
+                practice: "cerchi".into(),
+                choice: Some("influenza".into()),
+                ref_id: None,
+                texts: [("passo".to_string(), "Telefonare".to_string())].into(),
+            }),
+            Payload::GrowthStage(GrowthStage {
+                path_version: "crescita-v0.1".into(),
+                step: "proattivi".into(),
+                stage: crate::growth::Stage::Sometimes,
             }),
         ];
         assert_eq!(samples.len(), KINDS.len());

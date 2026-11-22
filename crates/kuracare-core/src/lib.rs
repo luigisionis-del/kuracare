@@ -9,6 +9,7 @@ pub mod enrich;
 pub mod error;
 pub mod event;
 pub mod export;
+pub mod growth;
 pub mod kinds;
 pub mod lists;
 pub mod migrations;

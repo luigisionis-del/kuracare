@@ -129,6 +129,19 @@ La PWA Svelte (tappe 2-3) è conservata nel tag git `pwa-final`, solo come rifer
 - Questionari: GAD-7 e PHQ-8 con testi **segnaposto**; i testi ufficiali li fornisce Luigi.
   Mai PHQ-9 (item sul suicidio: serve un protocollo con comitato etico).
 
+- **Crescita (tappa 7a, 22/11)**: percorso guidato sulle idee di Covey, *Le 7 regole per avere
+  successo* (1989). Testi in `content/crescita/percorso.it.json`, **scritti con parole di Kuracare**:
+  mai citazioni né brani del libro (diritto d'autore); i nomi italiani delle abitudini vanno
+  confrontati con l'edizione di Luigi. Gli id restano stabili; cambiando il senso, aumentare `version`.
+  Nucleo in `kuracare-core/src/growth.rs`: passi 0 (basi) e 1-7, schede, esercizi
+  (`write`, `choose`, `mission`, `matrix`, `renewal`), tipi `growthRead`, `growthPractice`,
+  `growthStage`. Sequenza guidata senza blocchi (`suggested`): un passo è "esplorato" con tutte
+  le schede lette e almeno un esercizio. Padronanza senza punteggi: autovalutazione a parole
+  facoltativa (`Stage`). Ripasso a intervalli crescenti (`REVIEW_DAYS` 3/7/21/60/120 giorni), solo
+  di schede già lette, come invito con "non ora" (`growth_review_dismissed_on`). Collegamenti:
+  matrice del tempo ↔ cose da fare (`refId`), abitudine 7 ↔ gesti di cura (`care_dimensions`).
+  Testi e `refId` mai nell'esportazione per la ricerca.
+
 ## Decisioni prese (21/11/2026)
 
 - Telefono: Pixel 8 Pro (Android 17). Licenza AGPL-3.0-only.
@@ -136,6 +149,9 @@ La PWA Svelte (tappe 2-3) è conservata nel tag git `pwa-final`, solo come rifer
   R2 interfaccia, R3 APK firmato; poi tappa 4 (promemoria nativi) e 5 (riepilogo e grafici).
 - 21/11: inviti in un momento casuale della finestra; inviti delle cose da fare con testo generico.
   Niente file `.ics` (superfluo con le notifiche native).
+- 22/11: sezione Crescita a sequenza guidata, con collegamenti a cose da fare e gesti di cura e
+  con il ripasso (scelte di Luigi). Sotto-tappe: 7a contenuti e nucleo, 7b interfaccia, 7c
+  collegamenti, riepilogo, inviti di ripasso e APK.
 - Casa: stanze Bagno, Cucina, Camera da letto (modificabili), un tocco + dettagli facoltativi.
 - Repository pubblico su GitHub, CI con GitHub Actions. Finestre dei check-in scelte al primo avvio.
 - Preset cannabis (tappa 3), percentuali THC/CBD da etichetta, non inventate:

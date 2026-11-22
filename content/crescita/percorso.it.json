@@ -1,0 +1,598 @@
+{
+  "version": "crescita-v0.1",
+  "source": {
+    "author": "Stephen R. Covey",
+    "title": "The 7 Habits of Highly Effective People",
+    "italianTitle": "Le 7 regole per avere successo",
+    "year": 1989
+  },
+  "_note": "Riassunti scritti con parole proprie: nessuna citazione né brano del libro (protetto da diritto d'autore). I nomi italiani delle abitudini sono traduzioni di Kuracare, da confrontare con l'edizione italiana di Luigi. Questo file lo può modificare Luigi; gli id (step, card, practice, prompt, choice) restano stabili perché le registrazioni li usano. Cambiando il senso dei testi, aumentare version.",
+  "steps": [
+    {
+      "id": "basi",
+      "number": 0,
+      "name": "Le basi",
+      "tagline": "Da dentro verso fuori",
+      "idea": "Prima delle sette abitudini c'è un modo di guardare le cose: i cambiamenti che durano partono da dentro di noi, dal carattere e dal modo in cui vediamo il mondo, e solo dopo si vedono fuori, nei risultati e nelle relazioni.",
+      "cards": [
+        {
+          "id": "paradigmi",
+          "title": "I paradigmi",
+          "text": "Un paradigma è la mappa con cui leggiamo la realtà. Non vediamo il mondo com'è, ma come siamo noi. Quando la mappa cambia, cambiano da sole anche le reazioni: per questo un cambiamento di sguardo può valere più di molti sforzi sul comportamento."
+        },
+        {
+          "id": "carattere",
+          "title": "Carattere e tecniche",
+          "text": "Si può cercare il successo con tecniche per piacere e convincere, oppure lavorando sul carattere: integrità, pazienza, coraggio, rispetto. Le tecniche funzionano per un po'; senza un carattere solido sotto, prima o poi si vede la crepa."
+        },
+        {
+          "id": "principi",
+          "title": "I principi",
+          "text": "I principi sono come leggi naturali delle relazioni e della crescita: correttezza, onestà, fiducia, servizio, crescita graduale. Non dipendono da noi e non si aggirano. Più le nostre mappe somigliano a questi principi, più sono affidabili."
+        },
+        {
+          "id": "abitudine",
+          "title": "Che cos'è un'abitudine",
+          "text": "Un'abitudine nasce dove si incontrano tre cose: sapere cosa fare e perché (conoscenza), sapere come farlo (capacità) e volerlo fare (desiderio). Se manca una delle tre, l'abitudine non prende piede."
+        },
+        {
+          "id": "maturita",
+          "title": "Dalla dipendenza all'interdipendenza",
+          "text": "Si cresce passando dalla dipendenza (\"tu ti occupi di me\") all'indipendenza (\"me ne occupo io\") e poi all'interdipendenza (\"insieme possiamo fare di più\"). Le abitudini 1, 2 e 3 portano all'indipendenza, la vittoria privata; le abitudini 4, 5 e 6 all'interdipendenza, la vittoria pubblica. La 7 rinnova tutte le altre."
+        },
+        {
+          "id": "pcp",
+          "title": "Produrre e saper produrre",
+          "text": "Ogni risultato (P, produzione) dipende da una capacità che lo rende possibile (CP, capacità di produrre): un corpo, una macchina, una relazione, una competenza. Chi spreme solo i risultati logora la capacità; chi cura solo la capacità non raccoglie. L'efficacia sta nell'equilibrio fra le due."
+        }
+      ],
+      "practices": [
+        {
+          "id": "nuovo-sguardo",
+          "title": "Un nuovo sguardo",
+          "kind": "write",
+          "intro": "Pensa a una situazione che ti pesa. Prova a guardarla con un'altra mappa.",
+          "prompts": [
+            { "id": "situazione", "label": "La situazione, in poche parole" },
+            { "id": "mappa-attuale", "label": "Come la vedo di solito" },
+            { "id": "altra-mappa", "label": "Un altro modo possibile di vederla" }
+          ]
+        },
+        {
+          "id": "equilibrio-pcp",
+          "title": "La tua capacità di produrre",
+          "kind": "write",
+          "intro": "Una cosa a cui tieni (il corpo, una relazione, un attrezzo, un'abilità): come stai trattando la sua capacità di dare frutto?",
+          "prompts": [
+            { "id": "risorsa", "label": "La risorsa" },
+            { "id": "cura", "label": "Un piccolo gesto per prendersene cura" }
+          ]
+        },
+        {
+          "id": "spiega",
+          "title": "Spiegalo con parole tue",
+          "kind": "write",
+          "intro": "Il modo più solido per padroneggiare un'idea è spiegarla a qualcun altro. Scrivila come la racconteresti a una persona cara.",
+          "prompts": [
+            { "id": "spiegazione", "label": "Le basi, raccontate da te" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "proattivi",
+      "number": 1,
+      "name": "Essere proattivi",
+      "tagline": "Scegliere la propria risposta",
+      "idea": "Fra ciò che ci succede e come rispondiamo c'è uno spazio, e in quello spazio c'è la nostra libertà di scegliere. Essere proattivi vuol dire prendersi la responsabilità delle proprie risposte, invece di attribuirle alle circostanze, agli altri o all'umore del momento.",
+      "cards": [
+        {
+          "id": "spazio",
+          "title": "Lo spazio fra stimolo e risposta",
+          "text": "Covey riprende un'intuizione di Viktor Frankl: anche nelle condizioni peggiori resta la libertà di scegliere il proprio atteggiamento. Abbiamo consapevolezza di noi, immaginazione, coscienza e volontà: sono gli strumenti per usare quello spazio."
+        },
+        {
+          "id": "responsabilita",
+          "title": "Responsabilità come capacità di rispondere",
+          "text": "Chi è reattivo si lascia guidare dalle condizioni esterne: se il tempo è bello sta bene, se qualcuno lo tratta male sta male. Chi è proattivo porta con sé il proprio clima e agisce secondo i propri valori, non secondo l'umore."
+        },
+        {
+          "id": "linguaggio",
+          "title": "Il linguaggio ci tradisce",
+          "text": "\"Non posso farci niente\", \"Mi fa arrabbiare\", \"Devo per forza\" sono frasi reattive: mettono il potere fuori di noi. \"Vediamo le alternative\", \"Scelgo di\", \"Preferisco\" sono proattive. Cambiare le parole aiuta a cambiare lo sguardo."
+        },
+        {
+          "id": "cerchi",
+          "title": "Cerchio d'influenza e cerchio di preoccupazione",
+          "text": "Il cerchio di preoccupazione contiene tutto ciò che ci tocca; dentro c'è un cerchio più piccolo, quello d'influenza, con ciò su cui possiamo agire. Chi mette le energie nel cerchio d'influenza lo vede allargarsi; chi le spende nella preoccupazione lo vede restringersi."
+        },
+        {
+          "id": "controllo",
+          "title": "Tre tipi di problemi",
+          "text": "Alcuni problemi dipendono da noi (si risolvono cambiando abitudini), altri dal comportamento di altri (si affrontano con il modo in cui influiamo su di loro), altri non dipendono da nessuno (si accettano con serenità). In tutti e tre i casi il primo passo è nostro."
+        },
+        {
+          "id": "impegni",
+          "title": "Piccoli impegni mantenuti",
+          "text": "Fare una promessa a sé e mantenerla, anche piccola, costruisce fiducia in sé. È il cuore della proattività: dare la parola e tenerla."
+        }
+      ],
+      "practices": [
+        {
+          "id": "cerchi",
+          "title": "In quale cerchio sta?",
+          "kind": "choose",
+          "intro": "Scegli una preoccupazione di questi giorni e mettila al suo posto.",
+          "prompts": [
+            { "id": "preoccupazione", "label": "La preoccupazione" },
+            { "id": "passo", "label": "Una cosa, anche piccola, che dipende da me" }
+          ],
+          "choices": [
+            { "id": "influenza", "label": "Ci posso fare qualcosa" },
+            { "id": "preoccupazione", "label": "Non dipende da me" }
+          ]
+        },
+        {
+          "id": "linguaggio",
+          "title": "Da reattivo a proattivo",
+          "kind": "write",
+          "intro": "Una frase reattiva che hai sentito o che hai detto: riscrivila.",
+          "prompts": [
+            { "id": "reattiva", "label": "La frase reattiva" },
+            { "id": "proattiva", "label": "La stessa cosa, detta in modo proattivo" }
+          ]
+        },
+        {
+          "id": "impegno",
+          "title": "Una piccola promessa",
+          "kind": "write",
+          "intro": "Una promessa piccola, fatta a te, che sai di poter mantenere.",
+          "prompts": [
+            { "id": "promessa", "label": "La promessa" },
+            { "id": "com-e-andata", "label": "Com'è andata (puoi scriverlo dopo)" }
+          ]
+        },
+        {
+          "id": "spiega",
+          "title": "Spiegalo con parole tue",
+          "kind": "write",
+          "intro": "Racconta la proattività come la spiegheresti a una persona cara.",
+          "prompts": [
+            { "id": "spiegazione", "label": "Essere proattivi, raccontato da te" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fine-in-mente",
+      "number": 2,
+      "name": "Cominciare con la fine in mente",
+      "tagline": "Sapere dove si vuole arrivare",
+      "idea": "Ogni cosa viene creata due volte: prima nella mente, poi nella realtà. Cominciare con la fine in mente vuol dire chiarire cosa conta davvero per noi, così che ogni giorno vada in quella direzione invece di seguire i copioni scritti da altri.",
+      "cards": [
+        {
+          "id": "due-creazioni",
+          "title": "Due creazioni",
+          "text": "Una casa si disegna prima di costruirla. Lo stesso vale per una giornata, un progetto, una vita: se non facciamo noi la prima creazione, la fanno al posto nostro le abitudini, le aspettative degli altri e le circostanze."
+        },
+        {
+          "id": "leadership",
+          "title": "Guidare prima di gestire",
+          "text": "Gestire è salire la scala nel modo più efficiente; guidare è controllare che la scala sia appoggiata al muro giusto. Si può essere molto efficienti e andare nella direzione sbagliata."
+        },
+        {
+          "id": "centro",
+          "title": "Il centro della vita",
+          "text": "Ognuno ha un centro attorno a cui gira: il lavoro, i soldi, il piacere, una persona, la famiglia, un nemico. Ogni centro dà sicurezza, orientamento e forza, ma se crolla trascina tutto con sé. Covey propone di mettere al centro i principi, che non crollano."
+        },
+        {
+          "id": "missione",
+          "title": "La missione personale",
+          "text": "Una missione personale è una breve dichiarazione di chi si vuole essere, cosa si vuole fare e su quali valori ci si fonda. È come una costituzione: si scrive con calma, si rilegge, si corregge negli anni."
+        },
+        {
+          "id": "ruoli",
+          "title": "Ruoli e obiettivi",
+          "text": "Viviamo diversi ruoli: figlio o figlia, genitore, amico o amica, persona che lavora, parte di una comunità. Dare a ogni ruolo uno o due obiettivi tiene la vita in equilibrio e impedisce che un ruolo si mangi tutti gli altri."
+        },
+        {
+          "id": "immaginare",
+          "title": "Immaginare per scegliere",
+          "text": "Immaginare con chiarezza come vorremmo comportarci in una situazione, prima che accada, ci prepara a viverla secondo i nostri valori. È la prima creazione applicata alle piccole cose."
+        }
+      ],
+      "practices": [
+        {
+          "id": "ricordo",
+          "title": "Cosa vorresti che dicessero di te",
+          "kind": "write",
+          "intro": "Immagina un giorno lontano in cui le persone importanti per te raccontano chi sei per loro. Cosa vorresti sentire?",
+          "prompts": [
+            { "id": "famiglia", "label": "Dalla famiglia" },
+            { "id": "amici", "label": "Da un'amica o un amico" },
+            { "id": "lavoro", "label": "Da chi lavora con te" },
+            { "id": "comunita", "label": "Dalla tua comunità" }
+          ]
+        },
+        {
+          "id": "missione",
+          "title": "La tua missione personale",
+          "kind": "mission",
+          "intro": "Scrivila con calma, anche a pezzi. Ogni volta che la salvi resta anche la versione di prima.",
+          "prompts": [
+            { "id": "chi", "label": "Chi voglio essere" },
+            { "id": "cosa", "label": "Cosa voglio fare" },
+            { "id": "valori", "label": "I principi su cui mi fondo" },
+            { "id": "ruoli", "label": "I miei ruoli (uno per riga)" }
+          ]
+        },
+        {
+          "id": "centro",
+          "title": "Che cosa sta al centro?",
+          "kind": "write",
+          "intro": "Senza giudicarti: oggi, attorno a cosa gira la tua vita?",
+          "prompts": [
+            { "id": "centro", "label": "Il centro, oggi" },
+            { "id": "principio", "label": "Un principio che vorrei al centro" }
+          ]
+        },
+        {
+          "id": "spiega",
+          "title": "Spiegalo con parole tue",
+          "kind": "write",
+          "intro": "Racconta questa abitudine come la spiegheresti a una persona cara.",
+          "prompts": [
+            { "id": "spiegazione", "label": "La fine in mente, raccontata da te" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "prima-importanti",
+      "number": 3,
+      "name": "Mettere prima le cose importanti",
+      "tagline": "Dare tempo a ciò che conta",
+      "idea": "Se la seconda abitudine decide cosa conta, la terza lo mette in pratica, giorno per giorno. Non si tratta di gestire il tempo ma di gestire se stessi: dare spazio a ciò che è importante prima che diventi urgente.",
+      "cards": [
+        {
+          "id": "matrice",
+          "title": "La matrice del tempo",
+          "text": "Ogni attività si può collocare secondo due domande: è urgente? è importante? Ne vengono quattro quadranti. I: urgente e importante (crisi, scadenze). II: importante, non urgente (prevenzione, relazioni, pianificazione, cura di sé). III: urgente, non importante (interruzioni, molte richieste altrui). IV: né urgente né importante (passatempi che svuotano)."
+        },
+        {
+          "id": "quadrante-due",
+          "title": "Il cuore è il quadrante II",
+          "text": "Le persone efficaci passano più tempo nel quadrante II. È lì che si previene la crisi di domani e si costruisce ciò che dura. Il tempo per il quadrante II si trova togliendolo soprattutto al III e al IV."
+        },
+        {
+          "id": "dire-no",
+          "title": "Saper dire di no",
+          "text": "Dire di sì a ciò che conta richiede di dire di no a molto altro, anche a cose buone. È più facile farlo quando si ha un sì più grande dentro, chiarito con la missione."
+        },
+        {
+          "id": "settimana",
+          "title": "Pianificare la settimana",
+          "text": "Più che la giornata, Covey consiglia di pianificare la settimana: rileggere i propri ruoli, scegliere per ognuno una o due cose importanti, dare loro un posto nel calendario prima che lo riempiano le urgenze, poi adattarsi giorno per giorno."
+        },
+        {
+          "id": "delega",
+          "title": "Delegare i risultati, non i compiti",
+          "text": "Delegare bene vuol dire accordarsi sul risultato atteso, sui limiti, sulle risorse, su come ci si confronterà e sulle conseguenze, lasciando all'altra persona la scelta del metodo. Si costruisce fiducia invece di controllare ogni passo."
+        }
+      ],
+      "practices": [
+        {
+          "id": "matrice",
+          "title": "Le tue cose da fare nella matrice",
+          "kind": "matrix",
+          "intro": "Metti ogni cosa da fare nel suo quadrante. Non c'è un quadrante giusto: serve solo a vedere dove va il tempo.",
+          "prompts": [],
+          "choices": [
+            { "id": "q1", "label": "I · Urgente e importante" },
+            { "id": "q2", "label": "II · Importante, non urgente" },
+            { "id": "q3", "label": "III · Urgente, non importante" },
+            { "id": "q4", "label": "IV · Né urgente né importante" }
+          ]
+        },
+        {
+          "id": "settimana",
+          "title": "La settimana per ruoli",
+          "kind": "write",
+          "intro": "Riprendi i tuoi ruoli e scegli per ciascuno una cosa importante di questa settimana.",
+          "prompts": [
+            { "id": "cose-importanti", "label": "Ruolo: la cosa importante (una per riga)" },
+            { "id": "rinuncia", "label": "Una cosa a cui questa settimana rinuncio" }
+          ]
+        },
+        {
+          "id": "no",
+          "title": "Un no gentile",
+          "kind": "write",
+          "intro": "Una richiesta a cui ti piacerebbe dire di no, e il sì più grande che c'è dietro.",
+          "prompts": [
+            { "id": "richiesta", "label": "La richiesta" },
+            { "id": "si-piu-grande", "label": "Il sì più grande" }
+          ]
+        },
+        {
+          "id": "spiega",
+          "title": "Spiegalo con parole tue",
+          "kind": "write",
+          "intro": "Racconta questa abitudine come la spiegheresti a una persona cara.",
+          "prompts": [
+            { "id": "spiegazione", "label": "Le cose importanti, raccontate da te" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "vincere-vincere",
+      "number": 4,
+      "name": "Pensare vincere/vincere",
+      "tagline": "Cercare il bene di entrambi",
+      "idea": "Con la quarta abitudine si entra nelle relazioni. Pensare vincere/vincere vuol dire cercare accordi e soluzioni che vadano bene a tutte le persone coinvolte, perché la vita non è una gara con un solo vincitore.",
+      "cards": [
+        {
+          "id": "conto-emotivo",
+          "title": "Il conto corrente emotivo",
+          "text": "In ogni relazione c'è una specie di conto della fiducia. Si versa con gentilezza, onestà, promesse mantenute; si preleva con scortesia, mancanze di rispetto, promesse tradite. Con un saldo alto, anche un errore viene compreso; con un saldo basso, ogni parola va pesata."
+        },
+        {
+          "id": "versamenti",
+          "title": "Sei modi di versare",
+          "text": "Capire davvero l'altra persona, curare le piccole attenzioni, mantenere gli impegni, chiarire le aspettative, essere integri anche con chi non è presente, chiedere scusa sinceramente quando si sbaglia."
+        },
+        {
+          "id": "sei-modi",
+          "title": "Sei modi di stare in relazione",
+          "text": "Vincere/vincere; vincere/perdere (io vinco, tu perdi); perdere/vincere (cedo per quieto vivere); perdere/perdere; solo vincere (penso solo a me); e vincere/vincere o niente accordo: se non troviamo una soluzione buona per entrambi, ci accordiamo per non accordarci, e restiamo in buoni rapporti."
+        },
+        {
+          "id": "carattere",
+          "title": "Il carattere sotto il vincere/vincere",
+          "text": "Servono integrità (dare valore ai propri impegni), maturità (l'equilibrio fra il coraggio di dire ciò che si vuole e la considerazione per ciò che vuole l'altro) e una mentalità dell'abbondanza: l'idea che ci sia abbastanza per tutti."
+        },
+        {
+          "id": "accordi",
+          "title": "Accordi chiari",
+          "text": "Un buon accordo dice quali risultati si vogliono, entro quali limiti, con quali risorse, come ci si confronterà e cosa succede dopo. Chiarire prima le aspettative evita molti prelievi dal conto emotivo."
+        }
+      ],
+      "practices": [
+        {
+          "id": "versamento",
+          "title": "Un versamento",
+          "kind": "choose",
+          "intro": "Un gesto che hai fatto, o che vorresti fare, per una persona a cui tieni.",
+          "prompts": [
+            { "id": "gesto", "label": "Il gesto (non serve scrivere il nome)" }
+          ],
+          "choices": [
+            { "id": "capire", "label": "Capire l'altra persona" },
+            { "id": "attenzioni", "label": "Una piccola attenzione" },
+            { "id": "impegno", "label": "Un impegno mantenuto" },
+            { "id": "aspettative", "label": "Aspettative chiarite" },
+            { "id": "integrita", "label": "Integrità" },
+            { "id": "scuse", "label": "Scuse sincere" }
+          ]
+        },
+        {
+          "id": "accordo",
+          "title": "Cercare un vincere/vincere",
+          "kind": "write",
+          "intro": "Una questione aperta con qualcuno. Prova a vedere le due vittorie.",
+          "prompts": [
+            { "id": "io", "label": "Cosa vorrei io" },
+            { "id": "altro", "label": "Cosa credo voglia l'altra persona" },
+            { "id": "entrambi", "label": "Una soluzione buona per entrambi" },
+            { "id": "niente-accordo", "label": "Se non la troviamo: come restare in buoni rapporti" }
+          ]
+        },
+        {
+          "id": "spiega",
+          "title": "Spiegalo con parole tue",
+          "kind": "write",
+          "intro": "Racconta questa abitudine come la spiegheresti a una persona cara.",
+          "prompts": [
+            { "id": "spiegazione", "label": "Vincere/vincere, raccontato da te" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "capire",
+      "number": 5,
+      "name": "Cercare prima di capire, poi di farsi capire",
+      "tagline": "Ascoltare per comprendere",
+      "idea": "Di solito ascoltiamo per rispondere, non per capire. La quinta abitudine chiede di invertire l'ordine: prima comprendere davvero l'altra persona, dal suo punto di vista, e solo dopo esporre il nostro.",
+      "cards": [
+        {
+          "id": "livelli",
+          "title": "Cinque modi di ascoltare",
+          "text": "Si può ignorare, fingere di ascoltare, ascoltare solo i pezzi che interessano, ascoltare con attenzione le parole, oppure ascoltare in modo empatico: per entrare nella cornice dell'altro e capire come vede e come sente."
+        },
+        {
+          "id": "autobiografia",
+          "title": "Le risposte autobiografiche",
+          "text": "Mentre l'altro parla tendiamo a filtrare tutto attraverso la nostra storia, e rispondiamo giudicando, indagando con domande nostre, consigliando o interpretando. Sono risposte che vengono da noi, non da lui o da lei."
+        },
+        {
+          "id": "empatia",
+          "title": "Ascolto empatico",
+          "text": "Ascoltare in modo empatico vuol dire restituire con parole proprie il contenuto e il sentimento di ciò che l'altro dice, senza aggiungere giudizi. Chi si sente capito si apre, e spesso trova da sé la propria strada."
+        },
+        {
+          "id": "farsi-capire",
+          "title": "Poi farsi capire",
+          "text": "Dopo aver capito, si espone il proprio punto di vista con coraggio. Covey ricorda tre elementi: la credibilità personale (ethos), il legame emotivo con l'altro (pathos) e il ragionamento (logos), in quest'ordine."
+        }
+      ],
+      "practices": [
+        {
+          "id": "ascolto",
+          "title": "Com'era il mio ascolto?",
+          "kind": "choose",
+          "intro": "Ripensa a una conversazione di oggi o di ieri.",
+          "prompts": [
+            { "id": "conversazione", "label": "La conversazione, in poche parole" },
+            { "id": "detto-sentito", "label": "Cosa diceva l'altra persona, e cosa sentiva" }
+          ],
+          "choices": [
+            { "id": "ignorare", "label": "Non ascoltavo" },
+            { "id": "fingere", "label": "Facevo finta" },
+            { "id": "selettivo", "label": "Ascoltavo solo dei pezzi" },
+            { "id": "attento", "label": "Ascoltavo le parole" },
+            { "id": "empatico", "label": "Cercavo di capire" }
+          ]
+        },
+        {
+          "id": "farsi-capire",
+          "title": "Preparare il mio punto di vista",
+          "kind": "write",
+          "intro": "Una cosa che vorresti far capire a qualcuno, dopo averlo ascoltato.",
+          "prompts": [
+            { "id": "suo-punto", "label": "Il suo punto di vista, come lo direbbe lui o lei" },
+            { "id": "mio-punto", "label": "Il mio punto di vista" }
+          ]
+        },
+        {
+          "id": "spiega",
+          "title": "Spiegalo con parole tue",
+          "kind": "write",
+          "intro": "Racconta questa abitudine come la spiegheresti a una persona cara.",
+          "prompts": [
+            { "id": "spiegazione", "label": "Prima capire, raccontato da te" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sinergia",
+      "number": 6,
+      "name": "Sinergia",
+      "tagline": "L'insieme vale più delle parti",
+      "idea": "La sinergia nasce quando persone diverse, che si fidano e si ascoltano, creano insieme qualcosa che nessuna avrebbe trovato da sola. È il frutto delle abitudini precedenti.",
+      "cards": [
+        {
+          "id": "differenze",
+          "title": "Dare valore alle differenze",
+          "text": "Se due persone la pensano sempre allo stesso modo, una delle due è superflua. Le differenze di sguardo non sono un ostacolo da appianare ma una risorsa: mostrano parti della realtà che da soli non vedremmo."
+        },
+        {
+          "id": "terza-alternativa",
+          "title": "La terza alternativa",
+          "text": "Davanti a un conflitto non si sceglie per forza fra la mia idea e la tua, né ci si accontenta di un compromesso a metà. Si cerca una terza strada, migliore di entrambe, a cui nessuno aveva pensato all'inizio."
+        },
+        {
+          "id": "comunicazione",
+          "title": "Tre livelli di comunicazione",
+          "text": "Con poca fiducia si comunica in modo difensivo; con una fiducia media in modo rispettoso, e si arriva al compromesso; con molta fiducia e collaborazione si comunica in modo sinergico, e nascono soluzioni nuove."
+        },
+        {
+          "id": "forze",
+          "title": "Forze che spingono e forze che frenano",
+          "text": "Ogni situazione sta in equilibrio fra forze che spingono verso il cambiamento e forze che lo frenano. Spingere di più spesso aumenta la resistenza; la sinergia lavora sulle forze frenanti, ascoltandole e trasformandole."
+        }
+      ],
+      "practices": [
+        {
+          "id": "terza-alternativa",
+          "title": "Trovare la terza alternativa",
+          "kind": "write",
+          "intro": "Una questione in cui due punti di vista si scontrano.",
+          "prompts": [
+            { "id": "mia", "label": "La mia proposta" },
+            { "id": "sua", "label": "La proposta dell'altra persona" },
+            { "id": "terza", "label": "Una terza strada, migliore di entrambe" }
+          ]
+        },
+        {
+          "id": "forze",
+          "title": "Le forze in gioco",
+          "kind": "write",
+          "intro": "Un cambiamento che vorresti. Cosa spinge e cosa frena?",
+          "prompts": [
+            { "id": "cambiamento", "label": "Il cambiamento" },
+            { "id": "spingono", "label": "Forze che spingono" },
+            { "id": "frenano", "label": "Forze che frenano, e come ascoltarle" }
+          ]
+        },
+        {
+          "id": "spiega",
+          "title": "Spiegalo con parole tue",
+          "kind": "write",
+          "intro": "Racconta la sinergia come la spiegheresti a una persona cara.",
+          "prompts": [
+            { "id": "spiegazione", "label": "La sinergia, raccontata da te" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "affilare",
+      "number": 7,
+      "name": "Affilare la sega",
+      "tagline": "Rinnovarsi in ogni dimensione",
+      "idea": "Chi taglia per ore con una sega che non affila mai fatica sempre di più. La settima abitudine è prendersi il tempo per rinnovare se stessi, la propria capacità di produrre, in modo regolare ed equilibrato.",
+      "cards": [
+        {
+          "id": "quattro-dimensioni",
+          "title": "Quattro dimensioni",
+          "text": "Covey distingue quattro dimensioni da rinnovare: fisica (movimento, alimentazione, riposo), mentale (leggere, imparare, scrivere, pianificare), sociale ed emotiva (relazioni, servizio, empatia) e spirituale (valori, silenzio, natura, meditazione, ciò che dà senso)."
+        },
+        {
+          "id": "equilibrio",
+          "title": "L'equilibrio",
+          "text": "Trascurare una dimensione indebolisce anche le altre. Non serve fare tanto: serve fare un poco in ognuna, con regolarità. È un'attività tipica del quadrante II: importante, mai urgente."
+        },
+        {
+          "id": "spirale",
+          "title": "La spirale verso l'alto",
+          "text": "La crescita procede a spirale: imparare, impegnarsi, fare; poi di nuovo imparare, a un livello un po' più alto. Ogni giro rende le abitudini precedenti più naturali."
+        },
+        {
+          "id": "per-gli-altri",
+          "title": "Rinnovare anche gli altri",
+          "text": "Il modo in cui guardiamo le persone influenza ciò che diventano. Vedere negli altri il loro potenziale, e trattarli di conseguenza, è uno dei regali più grandi che si possano fare."
+        }
+      ],
+      "practices": [
+        {
+          "id": "rinnovamento",
+          "title": "Un gesto di rinnovamento",
+          "kind": "renewal",
+          "intro": "Un gesto che ti ha rinnovato, in una delle quattro dimensioni. I tuoi gesti di cura possono contare qui da soli, se li colleghi a una dimensione.",
+          "prompts": [
+            { "id": "gesto", "label": "Il gesto (facoltativo)" }
+          ],
+          "choices": [
+            { "id": "fisica", "label": "Fisica" },
+            { "id": "mentale", "label": "Mentale" },
+            { "id": "sociale", "label": "Sociale ed emotiva" },
+            { "id": "spirituale", "label": "Spirituale" }
+          ]
+        },
+        {
+          "id": "spirale",
+          "title": "Un giro della spirale",
+          "kind": "write",
+          "intro": "Una cosa che hai imparato, l'impegno che ne nasce, e cosa farai.",
+          "prompts": [
+            { "id": "imparato", "label": "Ho imparato" },
+            { "id": "impegno", "label": "Mi impegno a" },
+            { "id": "fatto", "label": "Ho fatto (puoi scriverlo dopo)" }
+          ]
+        },
+        {
+          "id": "spiega",
+          "title": "Spiegalo con parole tue",
+          "kind": "write",
+          "intro": "Racconta questa abitudine come la spiegheresti a una persona cara.",
+          "prompts": [
+            { "id": "spiegazione", "label": "Affilare la sega, raccontato da te" }
+          ]
+        }
+      ]
+    }
+  ]
+}

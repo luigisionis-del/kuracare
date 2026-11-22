@@ -351,6 +351,12 @@ pub fn Edit(id: String) -> Element {
                 Payload::DataRelease(r) => rsx! {
                     p { class: "hint", "È la traccia di un'uscita di dati: {r.records} registrazioni verso «{r.destination}». Resta com'è." }
                 },
+                Payload::GrowthRead(_) | Payload::GrowthStage(_) => rsx! {
+                    p { class: "hint", "È una traccia del tuo percorso di crescita: puoi cambiarne l'ora o toglierla." }
+                },
+                Payload::GrowthPractice(_) => rsx! {
+                    p { class: "hint", "Gli esercizi si riaprono dalla sezione Crescita. Qui puoi cambiarne l'ora o toglierlo." }
+                },
                 Payload::Questionnaire(_) => rsx! {
                     p { class: "hint", "Le risposte del questionario restano com'erano in quel momento: puoi cambiarne solo l'ora." }
                 },

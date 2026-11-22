@@ -1,6 +1,9 @@
 //! Italian wording. The check-in labels and anchors are PROVISIONAL (core-v0.1):
 //! they will be replaced by items chosen from the ESM Item Repository (https://osf.io/kg376).
 
+use std::sync::LazyLock;
+
+use kuracare_core::growth::{self, Stage};
 use kuracare_core::kinds::{CheckinItem, MealType, Payload, Route};
 use kuracare_core::{Event, time};
 
@@ -126,6 +129,24 @@ pub fn describe(e: &Event) -> String {
             },
             r.format.to_uppercase()
         ),
+        Payload::GrowthRead(r) => format!(
+            "{}: {}",
+            if r.review { "Ripasso" } else { "Letta" },
+            PATH.step(&r.step)
+                .and_then(|s| s.card(&r.card))
+                .map(|c| c.title.to_lowercase())
+                .unwrap_or_else(|| "una scheda".into())
+        ),
+        Payload::GrowthPractice(p) => PATH
+            .step(&p.step)
+            .and_then(|s| s.practice(&p.practice))
+            .map(|x| x.title.clone())
+            .unwrap_or_else(|| "Un esercizio di crescita".into()),
+        Payload::GrowthStage(g) => format!(
+            "{}: {}",
+            step_name(&g.step),
+            stage_label(g.stage).to_lowercase()
+        ),
         Payload::Meal(m) => join(&[
             meal_label(m.meal_type).into(),
             m.description.clone().unwrap_or_else(|| {
@@ -137,6 +158,23 @@ pub fn describe(e: &Event) -> String {
             }),
         ]),
     }
+}
+
+/// The growth path, parsed once.
+pub static PATH: LazyLock<growth::Path> = LazyLock::new(growth::path);
+
+pub fn stage_label(s: Stage) -> &'static str {
+    match s {
+        Stage::Discovering => "La sto scoprendo",
+        Stage::Sometimes => "La pratico a volte",
+        Stage::Natural => "Mi viene naturale",
+    }
+}
+
+fn step_name(id: &str) -> String {
+    PATH.step(id)
+        .map(|s| s.name.clone())
+        .unwrap_or_else(|| "Crescita".into())
 }
 
 pub fn greeting(hour: i8) -> &'static str {

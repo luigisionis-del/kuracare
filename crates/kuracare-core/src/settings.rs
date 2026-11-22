@@ -1,4 +1,8 @@
+use std::collections::BTreeMap;
+
 use serde::{Deserialize, Serialize};
+
+use crate::growth::Dimension;
 
 use crate::error::Result;
 use crate::store::Store;
@@ -41,6 +45,10 @@ pub struct Settings {
     pub invitations: bool,
     /// Per-install seed for the random moments of the invitations (0 = not set yet).
     pub invite_salt: u64,
+    /// Growth, habit 7: care gesture label → dimension of renewal.
+    pub care_dimensions: BTreeMap<String, Dimension>,
+    /// Local date (YYYY-MM-DD) when today's growth review got a "Non ora".
+    pub growth_review_dismissed_on: Option<String>,
 }
 
 impl Settings {
@@ -63,6 +71,8 @@ impl Default for Settings {
             meal_recall_dismissed_on: None,
             invitations: false,
             invite_salt: 0,
+            care_dimensions: BTreeMap::new(),
+            growth_review_dismissed_on: None,
         }
     }
 }
