@@ -149,6 +149,13 @@ La PWA Svelte (tappe 2-3) è conservata nel tag git `pwa-final`, solo come rifer
   di cronologia per ogni livello sceso con un tocco (`AppState::go`), tolta da `up`/`back`
   (`own_pops` ignora i popstate nostri). Mai `pushState` dentro popstate: Chrome salta le voci
   aggiunte senza gesto dell'utente e il secondo "indietro" chiudeva l'app (visto nell'emulatore).
+- **Crescita, collegamenti e inviti (tappa 7c, 22/11)**: nell'esercizio del rinnovamento si
+  collegano i gesti di cura alle quattro dimensioni (anche quelli già registrati contano) e si
+  vedono gli ultimi 7 giorni, senza obiettivi. Riepilogo settimanale: `growth::week` (schede
+  lette/ripassate, esercizi, rinnovamento; mai testi). Inviti di ripasso (`InviteKind::Review`,
+  opt-in `growth_invites`, ora `growth_invite_time`, 18:00): uno solo nel giorno in cui una scheda
+  torna da ripassare; una scheda già scaduta non invita più. Toccarlo apre Crescita. Provato
+  nell'emulatore spostando la data. Versione 0.6.0.
 
 ## Decisioni prese (21/11/2026)
 

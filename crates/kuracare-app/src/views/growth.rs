@@ -7,15 +7,17 @@ use std::collections::BTreeMap;
 
 use dioxus::prelude::*;
 use kuracare_core::growth::{
-    self, GrowthPractice, GrowthRead, GrowthStage, Practice, PracticeKind, Quadrant, Stage, Step,
-    StepStatus,
+    self, Dimension, GrowthPractice, GrowthRead, GrowthStage, Practice, PracticeKind, Quadrant,
+    Stage, Step, StepStatus,
 };
 use kuracare_core::kinds::Payload;
+use kuracare_core::summary::Counted;
 use kuracare_core::{Event, time};
 
 use crate::labels::{PATH, stage_label};
 use crate::state::{View, use_app};
 use crate::views::parts::{Chip, Icon, ScreenHead};
+use crate::views::summary::Bars;
 
 /// The groups of the book: the basics, the private victory, the public one, renewal.
 const GROUPS: [(&str, u8, u8); 4] = [
@@ -436,6 +438,9 @@ pub fn PracticeView(step: String, practice: String) -> Element {
             } else {
                 Written { step: st.id.clone(), practice: pr.id.clone() }
             }
+            if pr.kind == PracticeKind::Renewal {
+                Renewal { step: st.id.clone(), practice: pr.id.clone() }
+            }
         }
     }
 }
@@ -553,6 +558,96 @@ fn Written(step: String, practice: String) -> Element {
                             class: "quiet small",
                             onclick: { let id = e.id.clone(); move |_| app.go(View::Edit(id.clone())) },
                             "Cambia l'ora o togli"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+/// Renewal per dimension over `days` days up to now, as bar rows.
+pub fn renewal_rows(
+    events: &[Event],
+    links: &BTreeMap<String, Dimension>,
+    days: i64,
+) -> Vec<Counted> {
+    let now = jiff::Timestamp::now();
+    let from = now - jiff::SignedDuration::from_hours(24 * days);
+    let counts = growth::renewal(
+        events,
+        links,
+        from,
+        now + jiff::SignedDuration::from_secs(1),
+    );
+    dimension_rows(counts)
+}
+
+/// The four dimensions with their counts (all four, so balance is visible).
+pub fn dimension_rows(counts: [usize; 4]) -> Vec<Counted> {
+    Dimension::ALL
+        .iter()
+        .zip(counts)
+        .map(|(d, n)| Counted {
+            label: dimension_label(*d),
+            times: n,
+            fulfilment: None,
+        })
+        .collect()
+}
+
+pub fn dimension_label(d: Dimension) -> String {
+    PATH.step("affilare")
+        .and_then(|s| s.practice("rinnovamento"))
+        .map(|p| choice_label(p, d.id()))
+        .unwrap_or_else(|| d.id().to_owned())
+}
+
+/// Habit 7: the last week by dimension, and which care gestures count where.
+#[component]
+fn Renewal(step: String, practice: String) -> Element {
+    let app = use_app();
+    let links = app.settings.read().care_dimensions.clone();
+    let rows = renewal_rows(&app.events.read(), &links, 7);
+    let labels = app.lists.read().care_labels.clone();
+    let any = rows.iter().any(|r| r.times > 0);
+
+    rsx! {
+        h2 { class: "sec", Icon { name: "growth" } "Gli ultimi sette giorni" }
+        if any {
+            Bars { rows }
+        } else {
+            p { class: "muted", "Ancora niente in questi giorni. Va bene così." }
+        }
+        p { class: "hint", "Un'immagine dell'equilibrio, non un obiettivo: nessuna dimensione deve arrivare a un numero." }
+
+        h2 { class: "sec", Icon { name: "care" } "I tuoi gesti di cura" }
+        p { class: "muted", "Collega un gesto a una dimensione e conterà qui da solo, ogni volta che lo registri. Tocca di nuovo per scollegarlo." }
+        if labels.is_empty() {
+            p { class: "hint", "Non hai ancora gesti di cura: li aggiungi in Impostazioni › Le tue liste." }
+        }
+        for label in labels {
+            div { key: "{label}", class: "matrix-row",
+                p { "{label}" }
+                div { class: "chips", role: "group", aria_label: "Dimensione di {label}",
+                    for d in Dimension::ALL {
+                        Chip {
+                            key: "{d:?}",
+                            label: dimension_label(d),
+                            pressed: links.get(&label) == Some(&d),
+                            onclick: {
+                                let label = label.clone();
+                                move |_| {
+                                    let label = label.clone();
+                                    app.update_settings(move |s| {
+                                        if s.care_dimensions.get(&label) == Some(&d) {
+                                            s.care_dimensions.remove(&label);
+                                        } else {
+                                            s.care_dimensions.insert(label, d);
+                                        }
+                                    });
+                                }
+                            },
                         }
                     }
                 }

@@ -7,10 +7,11 @@ use kuracare_core::kinds::{CheckinItem, Route};
 use kuracare_core::summary::{
     self, ASSOC_MIN_DAYS, ASSOC_WEEKS, Association, Counted, FactorKind, Trend,
 };
-use kuracare_core::time;
+use kuracare_core::{growth, time};
 
-use crate::labels::{MONTHS, WEEKDAYS, checkin_label, route_label};
+use crate::labels::{MONTHS, PATH, WEEKDAYS, checkin_label, route_label};
 use crate::state::use_app;
+use crate::views::growth::dimension_rows;
 use crate::views::parts::{Chip, Icon, ScreenHead};
 
 const DAY_INITIALS: [&str; 7] = ["L", "M", "M", "G", "V", "S", "D"];
@@ -51,6 +52,22 @@ fn factor_label(a: &Association) -> String {
     }
 }
 
+/// "«Il cerchio di influenza» · Essere proattivi, 2 volte".
+fn practice_line(step: &str, practice: &str, n: usize) -> String {
+    let st = PATH.step(step);
+    let title = st
+        .and_then(|s| s.practice(practice))
+        .map(|p| p.title.clone())
+        .unwrap_or_else(|| practice.to_owned());
+    let name = st.map(|s| s.name.clone()).unwrap_or_default();
+    let times = if n == 1 {
+        String::new()
+    } else {
+        format!(", {n} volte")
+    };
+    format!("«{title}» · {name}{times}")
+}
+
 #[component]
 pub fn Summary() -> Element {
     let app = use_app();
@@ -61,6 +78,20 @@ pub fn Summary() -> Element {
     let this_week = summary::week_start(time::now().date());
     let start = add_days(this_week, 7 * offset());
     let s = summary::weekly(&app.events.read(), start, &tz);
+    let g = {
+        let ts = |d: Date| {
+            d.at(0, 0, 0, 0)
+                .to_zoned_datetime(tz.clone())
+                .map(|z| z.timestamp())
+                .unwrap_or_else(|_| jiff::Timestamp::now())
+        };
+        growth::week(
+            &app.events.read(),
+            &app.settings.read().care_dimensions,
+            ts(s.start),
+            ts(add_days(s.end, 1)),
+        )
+    };
     let item_index = CheckinItem::ALL
         .iter()
         .position(|i| *i == assoc_item())
@@ -97,7 +128,7 @@ pub fn Summary() -> Element {
 
             // 1. What did good.
             h2 { class: "sec", Icon { name: "care" } "Cosa ti ha fatto bene" }
-            if !s.has_good_things() {
+            if !s.has_good_things() && g.is_empty() {
                 p { class: "muted", "Questa settimana qui non c'è ancora niente. Va bene così." }
             }
             if !s.reflections.is_empty() {
@@ -124,6 +155,31 @@ pub fn Summary() -> Element {
                     for (i, t) in s.tasks_done.iter().enumerate() {
                         li { key: "{i}", span { class: "dot" } "{t}" }
                     }
+                }
+            }
+
+            if !g.is_empty() {
+                p { class: "label", "Crescita" }
+                ul { class: "plain done-list",
+                    if g.cards_read > 0 {
+                        li { span { class: "dot" }
+                            if g.cards_read == 1 { "1 scheda letta" } else { "{g.cards_read} schede lette" }
+                        }
+                    }
+                    if g.cards_reviewed > 0 {
+                        li { span { class: "dot" }
+                            if g.cards_reviewed == 1 { "1 scheda ripassata" } else { "{g.cards_reviewed} schede ripassate" }
+                        }
+                    }
+                    for (st, pr, n) in g.practices.iter() {
+                        li { key: "{st}.{pr}", span { class: "dot" }
+                            {practice_line(st, pr, *n)}
+                        }
+                    }
+                }
+                if g.renewal.iter().any(|n| *n > 0) {
+                    p { class: "label", "Il rinnovamento" }
+                    Bars { rows: dimension_rows(g.renewal) }
                 }
             }
 
@@ -207,7 +263,7 @@ pub fn Summary() -> Element {
 
 /// Horizontal bars: how many times, saffron (these are the good things).
 #[component]
-fn Bars(rows: Vec<Counted>) -> Element {
+pub fn Bars(rows: Vec<Counted>) -> Element {
     let max = rows.iter().map(|r| r.times).max().unwrap_or(1).max(1);
     rsx! {
         ul { class: "bars",
@@ -216,12 +272,14 @@ fn Bars(rows: Vec<Counted>) -> Element {
                     div { class: "bar-head",
                         span { "{r.label}" }
                         span { class: "muted",
-                            if r.times == 1 { "1 volta" } else { "{r.times} volte" }
+                            if r.times == 0 { "nessuna" } else if r.times == 1 { "1 volta" } else { "{r.times} volte" }
                             if let Some(f) = r.fulfilment { " · appagamento {one(f)}" }
                         }
                     }
                     div { class: "bar-track", aria_hidden: "true",
-                        div { class: "bar-fill good", style: "width: {r.times as f64 / max as f64 * 100.0}%" }
+                        if r.times > 0 {
+                            div { class: "bar-fill good", style: "width: {r.times as f64 / max as f64 * 100.0}%" }
+                        }
                     }
                 }
             }

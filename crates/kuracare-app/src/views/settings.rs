@@ -153,6 +153,36 @@ pub fn Settings() -> Element {
                         "Mandami un invito di prova"
                     }
                 }
+                label { class: "check",
+                    input {
+                        r#type: "checkbox",
+                        checked: settings.growth_invites,
+                        onchange: move |_| {
+                            let on = !app.settings.peek().growth_invites;
+                            app.update_settings(|s| s.growth_invites = on);
+                        },
+                    }
+                    span { "Anche quando un'idea della Crescita è da ripassare" }
+                }
+                if settings.growth_invites {
+                    div { class: "window-row",
+                        label { r#for: "growth-time", "Verso le" }
+                        input {
+                            id: "growth-time",
+                            r#type: "time",
+                            value: "{settings.growth_invite_time}",
+                            onchange: move |e| {
+                                let v = e.value();
+                                let ok = TimeWindow { start: v.clone(), end: "23:59".into() }.is_valid()
+                                    || v == "23:59";
+                                if ok {
+                                    app.update_settings(|s| s.growth_invite_time = v);
+                                }
+                            },
+                        }
+                    }
+                    p { class: "hint", "Al massimo uno al giorno, solo il giorno in cui una scheda torna da ripassare. Se lo lasci passare, non torna." }
+                }
                 p { class: "hint",
                     "Il testo è sempre lo stesso e generico; sulla schermata di blocco si vede solo “Kuracare”. "
                     "Gli orari degli inviti restano sul telefono, fuori dalla cifratura, perché arrivino anche ad app chiusa."

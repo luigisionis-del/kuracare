@@ -12,6 +12,9 @@
 //!   once over. Never repeated: it disappears at the end of its window. An
 //!   invitation still showing stays in the plan until then (the Android side
 //!   removes notifications that drop out of it, e.g. after a check-in).
+//! - Growth reviews (opt-in): one invitation on the day a card of the path
+//!   comes up for review, at the chosen time. A card already overdue never
+//!   invites again (Home and Crescita still offer it, with "Non ora").
 //! - The plan covers `PLAN_DAYS` days; if the app is not opened for that long,
 //!   invitations simply stop.
 
@@ -35,6 +38,10 @@ pub const CHECKIN_TITLE: &str = "Ti va di fermarti un momento?";
 pub const CHECKIN_BODY: &str = "Un check-in breve, se ti va. Ogni voce si può saltare.";
 pub const TASK_TITLE: &str = "C'è una cosa in programma per adesso";
 pub const TASK_BODY: &str = "Ti va di darle un'occhiata?";
+pub const REVIEW_TITLE: &str = "Ti va di ripassare un'idea?";
+pub const REVIEW_BODY: &str = "Una scheda della Crescita, un paio di minuti.";
+/// How long a review invitation stays in the notification shade.
+const REVIEW_SHOWN: SignedDuration = SignedDuration::from_hours(3);
 pub const NOT_NOW: &str = "Non ora";
 pub const CHANNEL: &str = "Inviti";
 
@@ -43,6 +50,7 @@ pub const CHANNEL: &str = "Inviti";
 pub enum InviteKind {
     Checkin,
     Task,
+    Review,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
@@ -183,6 +191,9 @@ pub fn plan(settings: &Settings, events: &[Event], now: &ZonedDateTime) -> Plan 
                 body: TASK_BODY,
             });
         }
+        if settings.growth_invites {
+            items.extend(review_invites(settings, events, now, &paused));
+        }
         items.sort_by(|a, b| a.at.cmp(&b.at).then_with(|| a.key.cmp(&b.key)));
     }
     Plan {
@@ -191,6 +202,57 @@ pub fn plan(settings: &Settings, events: &[Event], now: &ZonedDateTime) -> Plan 
         not_now: NOT_NOW,
         items,
     }
+}
+
+/// One invitation per day on which a card comes up for review (in the 24
+/// hours before that day's invitation time). Today's is skipped once a card
+/// was read today or the review got a "Non ora".
+fn review_invites(
+    settings: &Settings,
+    events: &[Event],
+    now: &ZonedDateTime,
+    paused: &dyn Fn(Timestamp) -> bool,
+) -> Vec<Invite> {
+    let times: Vec<Timestamp> = crate::growth::review_times(&crate::growth::path(), events)
+        .into_iter()
+        .map(|(t, _)| t)
+        .collect();
+    if times.is_empty() {
+        return vec![];
+    }
+    let today = now.date();
+    let today_s = today.to_string();
+    let quiet_today = settings.growth_review_dismissed_on.as_deref() == Some(today_s.as_str())
+        || events.iter().any(|e| {
+            matches!(e.payload, Payload::GrowthRead(_))
+                && e.timestamp()
+                    .to_zoned_datetime(now.time_zone().clone())
+                    .date()
+                    == today
+        });
+    let mut out = vec![];
+    let mut day = today;
+    for _ in 0..PLAN_DAYS {
+        if let Some(at) = local(day, &settings.growth_invite_time, now) {
+            let since = at - SignedDuration::from_hours(24);
+            let until = at + REVIEW_SHOWN;
+            let comes_up = times.iter().any(|t| since < *t && *t <= at);
+            if comes_up && until > now.timestamp() && !paused(at) && !(day == today && quiet_today)
+            {
+                out.push(Invite {
+                    key: format!("review:{day}"),
+                    kind: InviteKind::Review,
+                    at: at.as_millisecond(),
+                    until: until.as_millisecond(),
+                    title: REVIEW_TITLE,
+                    body: REVIEW_BODY,
+                });
+            }
+        }
+        let Ok(next) = day.tomorrow() else { break };
+        day = next;
+    }
+    out
 }
 
 /// A fresh random salt for a new install (never 0, which means "not set").
@@ -353,5 +415,51 @@ mod tests {
         }];
         let p = plan(&s, &[], &rome("2026-03-28T12:00"));
         assert!(p.items.iter().any(|i| i.key == "checkin:2026-03-29:0"));
+    }
+
+    #[test]
+    fn review_invitations_come_once_on_the_day_a_card_is_due() {
+        use crate::growth::{GrowthRead, path};
+        let read = Event::at(
+            Payload::GrowthRead(GrowthRead {
+                path_version: path().version,
+                step: "proattivi".into(),
+                card: "cerchi".into(),
+                review: false,
+            }),
+            Origin::Spontaneous,
+            rome("2026-11-21T10:00"),
+        );
+        let mut s = settings();
+        s.growth_invites = true;
+        // Read on the 21st at 10:00: due on the 24th at 10:00, invited at 18:00.
+        let reviews = |s: &Settings, now: &str| -> Vec<String> {
+            plan(s, std::slice::from_ref(&read), &rome(now))
+                .items
+                .into_iter()
+                .filter(|i| i.kind == InviteKind::Review)
+                .map(|i| i.key)
+                .collect()
+        };
+        assert_eq!(reviews(&s, "2026-11-21T12:00"), ["review:2026-11-24"]);
+        // Overdue cards never invite again.
+        assert!(reviews(&s, "2026-11-25T08:00").is_empty());
+        // "Non ora" on the day itself.
+        s.growth_review_dismissed_on = Some("2026-11-24".into());
+        assert!(reviews(&s, "2026-11-24T09:00").is_empty());
+        // Off by default.
+        assert!(reviews(&settings(), "2026-11-21T12:00").is_empty());
+        let json = plan(
+            &{
+                let mut s = settings();
+                s.growth_invites = true;
+                s
+            },
+            &[read],
+            &rome("2026-11-21T12:00"),
+        )
+        .to_json();
+        assert!(json.contains("\"kind\":\"review\""));
+        assert!(!json.contains("cerchi"));
     }
 }

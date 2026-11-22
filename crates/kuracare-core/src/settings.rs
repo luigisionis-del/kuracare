@@ -49,6 +49,10 @@ pub struct Settings {
     pub care_dimensions: BTreeMap<String, Dimension>,
     /// Local date (YYYY-MM-DD) when today's growth review got a "Non ora".
     pub growth_review_dismissed_on: Option<String>,
+    /// An invitation when an idea of the path comes up for review (needs `invitations`).
+    pub growth_invites: bool,
+    /// "HH:MM": when review invitations arrive.
+    pub growth_invite_time: String,
 }
 
 impl Settings {
@@ -73,6 +77,8 @@ impl Default for Settings {
             invite_salt: 0,
             care_dimensions: BTreeMap::new(),
             growth_review_dismissed_on: None,
+            growth_invites: false,
+            growth_invite_time: "18:00".into(),
         }
     }
 }

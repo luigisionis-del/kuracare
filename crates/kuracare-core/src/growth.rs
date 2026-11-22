@@ -400,6 +400,16 @@ pub struct Due {
 /// least once: the path itself is never pushed. The app offers one at a time,
 /// with "non ora".
 pub fn due_reviews(path: &Path, events: &[Event], now: jiff::Timestamp) -> Vec<Due> {
+    review_times(path, events)
+        .into_iter()
+        .filter(|(at, _)| *at <= now)
+        .map(|(_, d)| d)
+        .collect()
+}
+
+/// When each card read at least once comes up for review (past or future),
+/// soonest first.
+pub fn review_times(path: &Path, events: &[Event]) -> Vec<(jiff::Timestamp, Due)> {
     let mut reads: BTreeMap<(String, String), (usize, jiff::Timestamp)> = BTreeMap::new();
     for e in events {
         if let Payload::GrowthRead(r) = &e.payload {
@@ -411,24 +421,102 @@ pub fn due_reviews(path: &Path, events: &[Event], now: jiff::Timestamp) -> Vec<D
             entry.1 = entry.1.max(t);
         }
     }
-    let mut due: Vec<(jiff::Timestamp, Due)> = reads
+    let mut out: Vec<(jiff::Timestamp, Due)> = reads
         .into_iter()
         .filter(|((s, c), _)| path.step(s).and_then(|s| s.card(c)).is_some())
-        .filter_map(|((step, card), (n, last))| {
+        .map(|((step, card), (n, last))| {
             let days = REVIEW_DAYS[(n - 1).min(REVIEW_DAYS.len() - 1)];
             let at = last + jiff::SignedDuration::from_hours(days * 24);
-            (at <= now).then_some((
+            (
                 at,
                 Due {
                     step,
                     card,
                     reads: n,
                 },
-            ))
+            )
         })
         .collect();
-    due.sort_by_key(|(at, _)| *at);
-    due.into_iter().map(|(_, d)| d).collect()
+    out.sort_by(|a, b| {
+        a.0.cmp(&b.0)
+            .then_with(|| (&a.1.step, &a.1.card).cmp(&(&b.1.step, &b.1.card)))
+    });
+    out
+}
+
+// ---- The week --------------------------------------------------------------
+
+/// What happened on the path in a span of time, for the weekly summary.
+/// Counts only, never texts.
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct GrowthWeek {
+    /// Cards read for the first time.
+    pub cards_read: usize,
+    /// Cards read again (reviews).
+    pub cards_reviewed: usize,
+    /// (step id, practice id, times), most frequent first.
+    pub practices: Vec<(String, String, usize)>,
+    /// Renewal per dimension, in `Dimension::ALL` order.
+    pub renewal: [usize; 4],
+}
+
+impl GrowthWeek {
+    pub fn is_empty(&self) -> bool {
+        self.cards_read == 0
+            && self.cards_reviewed == 0
+            && self.practices.is_empty()
+            && self.renewal.iter().all(|n| *n == 0)
+    }
+}
+
+/// The path between `from` and `to` (half-open). A read counts as a review
+/// when the same card had been read before it.
+pub fn week(
+    events: &[Event],
+    links: &BTreeMap<String, Dimension>,
+    from: jiff::Timestamp,
+    to: jiff::Timestamp,
+) -> GrowthWeek {
+    let mut w = GrowthWeek {
+        renewal: renewal(events, links, from, to),
+        ..GrowthWeek::default()
+    };
+    let mut first_read: BTreeMap<(&str, &str), jiff::Timestamp> = BTreeMap::new();
+    for e in events {
+        if let Payload::GrowthRead(r) = &e.payload {
+            let t = e.timestamp();
+            let slot = first_read
+                .entry((r.step.as_str(), r.card.as_str()))
+                .or_insert(t);
+            *slot = (*slot).min(t);
+        }
+    }
+    let mut practices: BTreeMap<(String, String), usize> = BTreeMap::new();
+    for e in events {
+        let t = e.timestamp();
+        if t < from || t >= to {
+            continue;
+        }
+        match &e.payload {
+            Payload::GrowthRead(r) => {
+                if first_read.get(&(r.step.as_str(), r.card.as_str())) == Some(&t) {
+                    w.cards_read += 1;
+                } else {
+                    w.cards_reviewed += 1;
+                }
+            }
+            Payload::GrowthPractice(p) => {
+                *practices
+                    .entry((p.step.clone(), p.practice.clone()))
+                    .or_default() += 1;
+            }
+            _ => {}
+        }
+    }
+    let mut v: Vec<_> = practices.into_iter().map(|((s, p), n)| (s, p, n)).collect();
+    v.sort_by(|a, b| b.2.cmp(&a.2).then_with(|| (&a.0, &a.1).cmp(&(&b.0, &b.1))));
+    w.practices = v;
+    w
 }
 
 #[cfg(test)]
@@ -747,5 +835,57 @@ mod tests {
         assert_eq!(due.len(), 2);
         assert_eq!(due[0].card, "paradigmi");
         assert_eq!(REVIEW_DAYS.last(), Some(&120)); // never more often than this, forever
+    }
+
+    #[test]
+    fn the_week_counts_reads_reviews_practices_and_renewal() {
+        let links = BTreeMap::from([("Camminare".to_string(), Dimension::Physical)]);
+        let care = |label: &str, iso: &str| {
+            at(
+                Payload::Care(Care {
+                    label: label.into(),
+                    duration_min: None,
+                    fulfilment: None,
+                }),
+                iso,
+            )
+        };
+        let events = vec![
+            read("proattivi", "cerchi", "2026-11-10T10:00:00+01:00"), // week before
+            read("proattivi", "cerchi", "2026-11-17T10:00:00+01:00"), // review
+            read("proattivi", "linguaggio", "2026-11-18T10:00:00+01:00"),
+            at(
+                Payload::GrowthPractice(practice(
+                    "affilare",
+                    "rinnovamento",
+                    Some("sociale"),
+                    None,
+                )),
+                "2026-11-19T10:00:00+01:00",
+            ),
+            at(
+                Payload::GrowthPractice(practice("proattivi", "cerchio", None, None)),
+                "2026-11-20T10:00:00+01:00",
+            ),
+            care("Camminare", "2026-11-21T10:00:00+01:00"),
+            care("Leggere", "2026-11-21T11:00:00+01:00"), // not linked
+        ];
+        let w = week(
+            &events,
+            &links,
+            ts("2026-11-16T00:00:00+01:00"),
+            ts("2026-11-23T00:00:00+01:00"),
+        );
+        assert_eq!((w.cards_read, w.cards_reviewed), (1, 1));
+        assert_eq!(w.practices.len(), 2);
+        assert_eq!(w.renewal, [1, 0, 1, 0]);
+        assert!(!w.is_empty());
+        let empty = week(
+            &events,
+            &links,
+            ts("2026-12-01T00:00:00+01:00"),
+            ts("2026-12-08T00:00:00+01:00"),
+        );
+        assert!(empty.is_empty());
     }
 }

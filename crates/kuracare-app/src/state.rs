@@ -156,7 +156,7 @@ impl AppState {
     }
 
     /// Recomputes the invitations and hands them to the phone. Called after
-    /// every change that can move them (settings, check-ins, tasks).
+    /// every change that can move them (settings, check-ins, tasks, growth reads).
     pub fn sync_invitations(self) {
         let plan = reminders::plan(
             &self.settings.peek(),
@@ -181,6 +181,7 @@ impl AppState {
         }
         match t.kind.as_str() {
             "checkin" => self.go(View::Checkin(Origin::Prompted)),
+            "review" => self.go(View::Growth),
             _ => self.back(),
         }
     }
@@ -297,7 +298,10 @@ impl AppState {
     }
 
     fn sync_if_relevant(self, e: &Event) {
-        if matches!(e.payload, Payload::Checkin(_) | Payload::Task(_)) {
+        if matches!(
+            e.payload,
+            Payload::Checkin(_) | Payload::Task(_) | Payload::GrowthRead(_)
+        ) {
             self.sync_invitations();
         }
     }
